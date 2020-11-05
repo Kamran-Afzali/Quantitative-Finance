@@ -7,6 +7,7 @@ library(quantmod)
 library(ggplot2)
 library(tidyverse)
 #https://bookdown.org/kochiuyu/Technical-Analysis-with-R/charting-with-indicators.html
+#https://lamfo-unb.github.io/2017/07/22/intro-stock-analysis-1/
 spy <- getSymbols("SPY", src = "yahoo", from = "2013-01-01", to = "2017-06-01", auto.assign = FALSE)
 
 ggplot(spy, aes(x = index(spy), y = spy[,6])) + 
@@ -35,6 +36,11 @@ chartSeries(spy,
             theme=chartTheme('white'))
 addMACD(fast=12,slow=26,signal=9,type="EMA")
 
+dailyReturn(spy)
+weeklyReturn(spy)
+monthlyReturn(spy)
+quarterlyReturn(spy)
+yearlyReturn(spy)
 
 
 day <-14
