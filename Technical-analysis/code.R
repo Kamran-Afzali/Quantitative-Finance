@@ -37,10 +37,15 @@ chartSeries(spy,
 addMACD(fast=12,slow=26,signal=9,type="EMA")
 
 dailyReturn(spy)
+plot(dailyReturn(spy))
 weeklyReturn(spy)
+plot(weeklyReturn(spy))
 monthlyReturn(spy)
+plot(monthlyReturn(spy))
 quarterlyReturn(spy)
+plot(quarterlyReturn(spy))
 yearlyReturn(spy)
+plot(yearlyReturn(spy))
 
 
 day <-14
