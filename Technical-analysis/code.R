@@ -70,4 +70,9 @@ names(ret1) <- 'Naive'
 charts.PerformanceSummary(ret1)
 
 
-charts.PerformanceSummary(ret1, main="Naive v.s. RSI")
+signal2=1*(EMA(Ad(spy),n=10)>EMA(Ad(spy),n=50))
+trade2 <- Lag(signal2)
+trade2[is.na(trade2)]=0
+ret2 <- dailyReturn(spy)*trade2
+sum(ret2)
+charts.PerformanceSummary(ret2)
