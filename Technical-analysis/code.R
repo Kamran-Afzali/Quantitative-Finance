@@ -38,35 +38,29 @@ addMACD(fast=12,slow=26,signal=9,type="EMA")
 
 dailyReturn(spy)
 plot(dailyReturn(spy))
+
+
 weeklyReturn(spy)
 plot(weeklyReturn(spy))
+
+
 monthlyReturn(spy)
 plot(monthlyReturn(spy))
+
+
 quarterlyReturn(spy)
 plot(quarterlyReturn(spy))
+
+
 yearlyReturn(spy)
 plot(yearlyReturn(spy))
 
 
-day <-14
-price <- Cl(spy)
-signal <- c()                    #initialize vector
-rsi <- RSI(price, day)     #rsi is the lag of RSI
-signal [1:day+1] <- 0            #0 because no signal until day+1
-
-for (i in (day+1): length(price)){
-  if (rsi[i] < 30){             #buy if rsi < 30
-    signal[i] <- 1
-  }else {                       #no trade all if rsi > 30
-    signal[i] <- 0
-  }
-}
-signal<-reclass(signal,Cl(spy))
-trade1 <- Lag(signal)
-
-#construct a new variable ret1
+signal1=1*(RSI(Ad(spy))< 30)
+trade1 <- Lag(signal1)
+trade1[is.na(trade1)]=0
 ret1 <- dailyReturn(spy)*trade1
-names(ret1) <- 'Naive'
+sum(ret1)
 charts.PerformanceSummary(ret1)
 
 
