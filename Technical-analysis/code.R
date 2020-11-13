@@ -1,14 +1,17 @@
 rm(list=ls())
+
 install.packages("quantmod")
-install.packages("ggplot2")
 install.packages("PerformanceAnalytics")
+
+
 library(PerformanceAnalytics)
 library(quantmod)
-library(ggplot2)
 library(tidyverse)
+
 #https://bookdown.org/kochiuyu/Technical-Analysis-with-R/charting-with-indicators.html
 #https://lamfo-unb.github.io/2017/07/22/intro-stock-analysis-1/
-spy <- getSymbols("SPY", src = "yahoo", from = "2013-01-01", to = "2017-06-01", auto.assign = FALSE)
+
+spy <- getSymbols("SPY", src = "yahoo", from = "2013-01-01", to = "2019-06-01", auto.assign = FALSE)
 
 
 
@@ -26,6 +29,9 @@ chartSeries(spy,
 chartSeries(spy,
             type="bar",
             theme=chartTheme('white'))
+
+
+
 SMA(Ad(spy),n=20)
 EMA(Ad(spy),n=20)
 BBands(Ad(spy),s.d=2)
