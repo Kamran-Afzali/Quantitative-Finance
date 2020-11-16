@@ -32,16 +32,6 @@ chartSeries(spy,
 
 
 
-SMA(Ad(spy),n=20)
-EMA(Ad(spy),n=20)
-BBands(Ad(spy),s.d=2)
-MACD(Ad(spy),12,26,9,EMA)
-RSI(Ad(spy),n=5)
-
-chartSeries(spy,
-            subset='2013::2016',
-            theme=chartTheme('white'))
-addMACD(fast=12,slow=26,signal=9,type="EMA")
 
 dailyReturn(spy)
 plot(dailyReturn(spy))
@@ -62,6 +52,13 @@ plot(quarterlyReturn(spy))
 yearlyReturn(spy)
 plot(yearlyReturn(spy))
 
+SMA(Ad(spy),n=20)
+EMA(Ad(spy),n=20)
+chartSeries(spy,
+            subset='2013::2016',
+            theme=chartTheme('white'))
+addMACD(fast=12,slow=26,signal=9,type="EMA")
+
 
 signal1=1*(RSI(Ad(spy))< 30)
 trade1 <- Lag(signal1)
@@ -70,6 +67,7 @@ ret1 <- dailyReturn(spy)*trade1
 sum(ret1)
 charts.PerformanceSummary(ret1)
 
+RSI(Ad(spy),n=5)
 
 signal2=1*(EMA(Ad(spy),n=10)>EMA(Ad(spy),n=50))
 trade2 <- Lag(signal2)
