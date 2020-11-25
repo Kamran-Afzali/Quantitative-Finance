@@ -13,6 +13,7 @@ library(forecast)
 
 #https://bookdown.org/kochiuyu/Technical-Analysis-with-R/charting-with-indicators.html
 #https://lamfo-unb.github.io/2017/07/22/intro-stock-analysis-1/
+#https://github.com/andrew-couch/Tidy-Tuesday/blob/master/TidyTuesdayForecasting.Rmd
 
 spy <- getSymbols("SPY", src = "yahoo", from = "2013-01-01", to = "2019-06-01", auto.assign = FALSE)
 
