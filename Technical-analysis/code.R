@@ -2,11 +2,14 @@ rm(list=ls())
 
 install.packages("quantmod")
 install.packages("PerformanceAnalytics")
-
+install.packages("modeldata")
+install.packages("forecast")
 
 library(PerformanceAnalytics)
 library(quantmod)
 library(tidyverse)
+library(modeldata)
+library(forecast)
 
 #https://bookdown.org/kochiuyu/Technical-Analysis-with-R/charting-with-indicators.html
 #https://lamfo-unb.github.io/2017/07/22/intro-stock-analysis-1/
