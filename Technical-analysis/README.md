@@ -1,3 +1,2 @@
-# LSTM_Stock_Analysis
-Time series analysis of stock market using recurrent neural networks
-A simple introduction to time series analysis of stock market using recurrent neural networks. The folder includes functions for preprocessing and preparing lagged data as well as LSTM models with single and multiple outputs. Data is extracted from https://finance.yahoo.com.
+# An introduction to stock data analysis with R 
+Stock and investments analysis are themes that can be deeply explored in programming. Multiple programming languages and data science framework can be explored in this context. This includes R language, which already has a big literature, packages and functions developed in the domain of quantitative finance. In this post, we’ll do a brief introduction to the subject using the quantmod package. The blog post: https://kamran-afzali.github.io/posts/2020-11-14/StockR.html.
