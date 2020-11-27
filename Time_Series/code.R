@@ -26,3 +26,7 @@ plot(weeklyReturn(BTC))
 ts=ts(weeklyReturn(BTC))
 
 auto.arima(ts)
+
+logts=log10(ts)
+auto.arima(logts)
+
