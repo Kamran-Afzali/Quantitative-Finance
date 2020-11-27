@@ -1,7 +1,5 @@
 #https://github.com/andrew-couch/Tidy-Tuesday/blob/master/TidyTuesdayForecasting.Rmd
 
-install.packages("modeldata")
-install.packages("forecast")
 
 library(PerformanceAnalytics)
 library(quantmod)
@@ -19,9 +17,12 @@ Cl(BTC)
 Vo(BTC)
 Ad(BTC)
 
-#dailyReturn(BTC)
+
+
 plot(dailyReturn(BTC))
 
 plot(weeklyReturn(BTC))
+
 ts=ts(weeklyReturn(BTC))
+
 auto.arima(ts)
