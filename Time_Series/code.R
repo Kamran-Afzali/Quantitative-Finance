@@ -28,31 +28,34 @@ plot(dailyReturn(BTC))
 
 plot(weeklyReturn(BTC))
 
-ts=ts(weeklyReturn(BTC))
+ts=as.data.frame(weeklyReturn(BTC))
+ts$date=as.Date (row.names(ts)) 
+auto.arima(ts$weekly.returns)
 
-auto.arima(ts)
-
-logts=log10(ts)
+logts=log10(ts$weekly.returns)
 auto.arima(logts)
 
 
 train_data <- training(initial_time_split(ts, prop = .8))
 test_data <- testing(initial_time_split(ts, prop = .8))
 
-
+train_data %>% mutate(type = "train") %>% 
+  bind_rows(test_data %>% mutate(type = "test")) %>% 
+  ggplot(aes(x = date, y =weekly.returns, color = type)) + 
+  geom_line()
 
 arima_model <- arima_reg() %>% 
   set_engine("auto_arima") %>% 
-  fit(daily_change~date, data = train_data)
+  fit(weekly.returns~date, data = train_data)
 prophet_model <- prophet_reg() %>% 
   set_engine("prophet") %>% 
-  fit(daily_change~date, data = train_data)
+  fit(weekly.returns~date, data = train_data)
 tslm_model <- linear_reg() %>% 
   set_engine("lm") %>% 
-  fit(daily_change~as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
+  fit(weekly.returns~as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
 arima_boosted_model <- arima_boost(learn_rate = .015, min_n = 2) %>% 
   set_engine("auto_arima_xgboost") %>% 
-  fit(daily_change~date + as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
+  fit(weekly.returns~date + as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
 forecast_table <- modeltime_table(
   arima_model,
   prophet_model,
