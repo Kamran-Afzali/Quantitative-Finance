@@ -47,15 +47,23 @@ train_data %>% mutate(type = "train") %>%
 arima_model <- arima_reg() %>% 
   set_engine("auto_arima") %>% 
   fit(weekly.returns~date, data = train_data)
+
+
 prophet_model <- prophet_reg() %>% 
   set_engine("prophet") %>% 
   fit(weekly.returns~date, data = train_data)
+
+
 tslm_model <- linear_reg() %>% 
   set_engine("lm") %>% 
   fit(weekly.returns~as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
+
+
 arima_boosted_model <- arima_boost(learn_rate = .015, min_n = 2) %>% 
   set_engine("auto_arima_xgboost") %>% 
   fit(weekly.returns~date + as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
+
+
 forecast_table <- modeltime_table(
   arima_model,
   prophet_model,
