@@ -70,3 +70,28 @@ forecast_table <- modeltime_table(
   tslm_model,
   arima_boosted_model
 )
+
+
+
+forecast_table <- modeltime_table(
+  arima_model,
+  prophet_model,
+  tslm_model,
+  arima_boosted_model
+)
+
+forecast_table %>% 
+  modeltime_calibrate(test_data) %>% 
+  modeltime_accuracy()
+
+
+forecast_table %>% 
+  modeltime_calibrate(test_data) %>% 
+  modeltime_forecast(actual_data = test_data) %>% 
+  plot_modeltime_forecast()
+
+
+forecast_table %>% 
+  modeltime_refit(df) %>% 
+  modeltime_forecast(h = 7, actual_data = df) %>% 
+  plot_modeltime_forecast()
