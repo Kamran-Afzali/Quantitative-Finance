@@ -30,11 +30,6 @@ plot(weeklyReturn(BTC))
 
 ts=as.data.frame(weeklyReturn(BTC))
 ts$date=as.Date (row.names(ts)) 
-auto.arima(ts$weekly.returns)
-
-logts=log10(ts$weekly.returns)
-auto.arima(logts)
-
 
 train_data <- training(initial_time_split(ts, prop = .8))
 test_data <- testing(initial_time_split(ts, prop = .8))
