@@ -16,11 +16,14 @@ library(lubridate)
 BTC <- getSymbols("BTC-USD", src = "yahoo", from = "2013-01-01", to = "2020-11-01", auto.assign = FALSE)
 
 Op(BTC)
+Cl(BTC)
+
 Hi(BTC)
 Lo(BTC)
-Cl(BTC)
+
 Vo(BTC)
-Ad(BTC)
+
+
 
 
 
