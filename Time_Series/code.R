@@ -28,7 +28,7 @@ plot(dailyReturn(BTC))
 
 plot(weeklyReturn(BTC))
 
-ts=as.data.frame(weeklyReturn(BTC))
+ts=as.data.frame(dailyReturn(BTC))
 ts$date=as.Date (row.names(ts)) 
 
 train_data <- training(initial_time_split(ts, prop = .8))
@@ -36,44 +36,37 @@ test_data <- testing(initial_time_split(ts, prop = .8))
 
 train_data %>% mutate(type = "train") %>% 
   bind_rows(test_data %>% mutate(type = "test")) %>% 
-  ggplot(aes(x = date, y =weekly.returns, color = type)) + 
+  ggplot(aes(x = date, y =daily.returns, color = type)) + 
   geom_line()
 
 arima_model <- arima_reg() %>% 
   set_engine("auto_arima") %>% 
-  fit(weekly.returns~date, data = train_data)
+  fit(daily.returns~date, data = train_data)
 
 
 prophet_model <- prophet_reg() %>% 
   set_engine("prophet") %>% 
-  fit(weekly.returns~date, data = train_data)
+  fit(daily.returns~date, data = train_data)
 
 
 tslm_model <- linear_reg() %>% 
   set_engine("lm") %>% 
-  fit(weekly.returns~as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
+  fit(daily.returns~as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
 
 
-arima_boosted_model <- arima_boost(learn_rate = .015, min_n = 2) %>% 
-  set_engine("auto_arima_xgboost") %>% 
-  fit(weekly.returns~date + as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
-
-
-forecast_table <- modeltime_table(
-  arima_model,
-  prophet_model,
-  tslm_model,
-  arima_boosted_model
-)
-
+#arima_boosted_model <- arima_boost(learn_rate = .015, min_n = 2) %>% 
+#  set_engine("auto_arima_xgboost") %>% 
+#  fit(daily.returns~date + as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
 
 
 forecast_table <- modeltime_table(
   arima_model,
   prophet_model,
-  tslm_model,
-  arima_boosted_model
+  tslm_model
+  #,arima_boosted_model
 )
+
+
 
 forecast_table %>% 
   modeltime_calibrate(test_data) %>% 
@@ -86,7 +79,3 @@ forecast_table %>%
   plot_modeltime_forecast()
 
 
-forecast_table %>% 
-  modeltime_refit(df) %>% 
-  modeltime_forecast(h = 7, actual_data = df) %>% 
-  plot_modeltime_forecast()
