@@ -1,6 +1,6 @@
 #https://github.com/andrew-couch/Tidy-Tuesday/blob/master/TidyTuesdayForecasting.Rmd
 #https://github.com/andrew-couch/Tidy-Tuesday/blob/master/TidyTuesdayTidyForecast.Rmd
-
+#https://bookdown.org/kochiuyu/Technical-Analysis-with-R/charting-with-indicators.html
 
 library(PerformanceAnalytics)
 library(quantmod)
