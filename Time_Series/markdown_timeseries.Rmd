@@ -22,10 +22,8 @@ BTC <- getSymbols("BTC-USD", src = "yahoo", from = "2013-01-01", to = "2020-11-0
 
 Op(BTC)
 Cl(BTC)
-
 Hi(BTC)
 Lo(BTC)
-
 Vo(BTC)
 ```
 
