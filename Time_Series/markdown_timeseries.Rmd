@@ -2,6 +2,9 @@
 title: "time series"
 output: html_notebook
 ---
+Prediction of future movement patterns of stock prices has been a widely researched area in the literature. While there are proponents of the efficient market hypothesis who believe that it is impossible to predict stock prices, there are also propositions that demonstrated that if correctly formulated and modeled, prediction of stock prices can be done with a fairly high level of accuracy. The latter school of thought focused on the construction of robust statistical, econometric and machine learning models based on the careful choice of variables and appropriate functional forms or models of forecasting. There propositions in the literature that are based on time series analysis and decomposition for forecasting future values of stocks.
+
+The literature attempting to prove or disprove the efficient market hypothesis can be classified into three strands, according to the choice of variables and techniques of estimation and forecasting. The first strand consists of studies using simple regression techniques on cross-sectional data. The second strand of the literature has used time series models and techniques to forecast stock returns following economic tools like autoregressive integrated moving average (ARIMA), Granger causality test, autoregressive distributed lag (ARDL) and quantile regression (QR) to forecast stock prices. The third strand includes work using machine learning tools for the prediction of stock returns.
 
 
 ```{r}
