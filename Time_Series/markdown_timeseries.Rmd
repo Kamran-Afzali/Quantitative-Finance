@@ -6,6 +6,29 @@ Prediction of future movement patterns of stock prices has been a widely researc
 
 The literature attempting to prove or disprove the efficient market hypothesis can be classified into three strands, according to the choice of variables and techniques of estimation and forecasting. The first strand consists of studies using simple regression techniques on cross-sectional data. The second strand of the literature has used time series models and techniques to forecast stock returns following economic tools like autoregressive integrated moving average (ARIMA), Granger causality test, autoregressive distributed lag (ARDL) and quantile regression (QR) to forecast stock prices. The third strand includes work using machine learning tools for the prediction of stock returns.
 
+Time-series forecasting models are the models that are capable to predict future values based on previously observed values.  A time series is simply a series of data points ordered in time. In a time series, time is often the independent variable and the goal is usually to make a forecast for the future.
+However, there are other aspects that come into play when dealing with time series.
+Is it stationary?
+Is there a seasonality?
+Is the target variable autocorrelated?
+
+Autocorrelation
+Informally, autocorrelation is the similarity between observations as a function of the time lag between them.
+Above is an example of an autocorrelation plot. Looking closely, you realize that the first value and the 24th value have a high autocorrelation. Similarly, the 12th and 36th observations are highly correlated. This means that we will find a very similar value at every 24 unit of time.
+Notice how the plot looks like sinusoidal function. This is a hint for seasonality, and you can find its value by finding the period in the plot above, which would give 24h.
+
+Seasonality
+Seasonality refers to periodic fluctuations. For example, electricity consumption is high during the day and low during night, or online sales increase during Christmas before slowing down again.
+As you can see above, there is a clear daily seasonality. Every day, you see a peak towards the evening, and the lowest points are the beginning and the end of each day.
+Remember that seasonality can also be derived from an autocorrelation plot if it has a sinusoidal shape. Simply look at the period, and it gives the length of the season.
+
+
+Stationarity
+Stationarity is an important characteristic of time series. A time series is said to be stationary if its statistical properties do not change over time. In other words, it has constant mean and variance, and covariance is independent of time.
+Looking again at the same plot, we see that the process above is stationary. The mean and variance do not vary over time.
+
+
+
 
 ```{r}
 library(PerformanceAnalytics)
