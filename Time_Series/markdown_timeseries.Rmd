@@ -29,7 +29,7 @@ Looking again at the same plot, we see that the process above is stationary. The
 
 
 
-
+The analyzed index used here will be BTC, the conversion  rate of bitcoin to USD, with data extracted from Yahoo Finance using the package quantmod in R.
 ```{r}
 library(PerformanceAnalytics)
 library(quantmod)
@@ -52,13 +52,14 @@ Hi(BTC)
 Lo(BTC)
 Vo(BTC)
 ```
-
+A possibility given by quantmod is the calculation of returns for different periods. For example, it’s possible to calculate the returns by day, week, month, quarter and year, just by using the following commands:
 
 ```{r}
 plot(dailyReturn(BTC))
-
 plot(weeklyReturn(BTC))
+```
 
+```{r}
 ts=as.data.frame(dailyReturn(BTC))
 ts$date=as.Date (row.names(ts)) 
 ```
