@@ -58,18 +58,19 @@ A possibility given by quantmod is the calculation of returns for different peri
 plot(dailyReturn(BTC))
 plot(weeklyReturn(BTC))
 ```
-
+Here we add the date column to the time-series data set.
 ```{r}
 ts=as.data.frame(dailyReturn(BTC))
 ts$date=as.Date (row.names(ts)) 
 ```
 
+and split the data to trining and test fro cross validation.
 ```{r}
 train_data <- training(initial_time_split(ts, prop = .8))
 test_data <- testing(initial_time_split(ts, prop = .8))
 
 ```
-
+Here is the visualization of propre training test split for time series data.
 ```{r}
 train_data %>% mutate(type = "train") %>% 
   bind_rows(test_data %>% mutate(type = "test")) %>% 
