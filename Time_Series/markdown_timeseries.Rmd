@@ -78,7 +78,7 @@ train_data %>% mutate(type = "train") %>%
   geom_line()
 ```
 
-
+The model fitting procedure is similar to that tidy models, here is the example for an ARIMA model fitted on the training data,
 ```{r}
 arima_model <- arima_reg() %>% 
   set_engine("auto_arima") %>% 
@@ -86,14 +86,14 @@ arima_model <- arima_reg() %>%
 ```
 
 
-
+a prophet regression model fitted on the training data,
 ```{r}
 prophet_model <- prophet_reg() %>% 
   set_engine("prophet") %>% 
   fit(daily.returns~date, data = train_data)
 ```
 
-
+and a linear regression model fitted on the training data.
 ```{r}
 tslm_model <- linear_reg() %>% 
   set_engine("lm") %>% 
@@ -107,7 +107,6 @@ forecast_table <- modeltime_table(
   arima_model,
   prophet_model,
   tslm_model
-  #,arima_boosted_model
 )
 ```
 
