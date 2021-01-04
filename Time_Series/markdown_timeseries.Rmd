@@ -6,11 +6,11 @@ Forecasting the fluctuation patterns of stock prices has been an extensively res
 
 Previous studies attempting forecast the patterns of stock prices can be classified into three strands, according to the choice of techniques of estimation and variables used for forecasting. The first strand consists of studies using linear or non-linear regression techniques. The second strand of the previous studies following time series data and capitalizing on forecasting models and techniques to forecast stock returns like autoregressive integrated moving average (ARIMA), quantile regression (QR), autoregressive distributed lag (ARDL), and Granger causality test, to forecast stock prices. The third strand includes work using modern machine learning and deep learning tools for the prediction of stock returns.
 
-Time-series forecasting models are the models that are capable to predict future values based on previously observed values.  A time series is simply a series of data points ordered in time. In a time series, time is often the independent variable and the goal is usually to make a forecast for the future.
-However, there are other aspects that come into play when dealing with time series.
-Is it stationary?
-Is there a seasonality?
-Is the target variable autocorrelated?
+As mentioned above, time series is referring to a series of data points ordered in time and forecasting models are optimized to predict future values based on previously observed time series based on time and other time varying or time invariant covariates independent variables. There are also other aspects that come into play when dealing with time series.
+Is the time series stationary?
+Is there a seasonality in the time series?
+Is the dependant variable autocorrelated?
+
 
 Autocorrelation
 Informally, autocorrelation is the similarity between observations as a function of the time lag between them.
