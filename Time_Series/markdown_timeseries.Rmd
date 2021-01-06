@@ -8,20 +8,19 @@ Previous studies attempting forecast the patterns of stock prices can be classif
 
 As mentioned above, time series is referring to a series of data points ordered in time and forecasting models are optimized to predict future values based on previously observed time series based on time and other time varying or time invariant covariates independent variables. There are also other aspects that come into play when dealing with time series.
 Is the time series stationary?
-Is there a seasonality in the time series?
 Is the dependant variable autocorrelated?
+Is there a seasonality in the time series?
 
-
-Autocorrelation
-Informally, autocorrelation is the similarity between observations as a function of the time lag between them.
-Above is an example of an autocorrelation plot. Looking closely, you realize that the first value and the 24th value have a high autocorrelation. Similarly, the 12th and 36th observations are highly correlated. This means that we will find a very similar value at every 24 unit of time. Notice how the plot looks like sinusoidal function. This is a hint for seasonality, and you can find its value by finding the period in the plot above, which would give 24h.
-
-Seasonality
-Seasonality refers to periodic fluctuations. For example, electricity consumption is high during the day and low during night, or online sales increase during Christmas before slowing down again. As you can see above, there is a clear daily seasonality. Every day, you see a peak towards the evening, and the lowest points are the beginning and the end of each day. Remember that seasonality can also be derived from an autocorrelation plot if it has a sinusoidal shape. Simply look at the period, and it gives the length of the season.
 
 Stationarity
 A time series is said to be stationary if its statistical properties do not change over time. Stationarity is essential as in its absence, the model forcasting the data will vary in performance at different time points. Therefore, stationarity is required for sample statistics such as means, variances, and correlations to accurately describe the data at all time points of interest.
 
+Autocorrelation
+Autocorrelation measures the relationship between a variable's current value and its past values. In other words, it is the relationship between observations based on the time lag between them that can be represented in a plot looks like sinusoidal function.
+This means that we will find a very similar value at a given lagged unit of time (e.g., once in each 12th observation). 
+
+Seasonality
+Seasonality refers to periodic fluctuations in time series data that is characterized by the presence of variations that occur at specific regular intervals. For example, natural consumption is high during the winter and low during summer, or online sales increase during black Friday weekend before slowing down again. Seasonality can be derived from an autocorrelation plot with a sinusoidal shape. Simply look at the period, and it gives the length of the season.
 
 
 The analyzed index used here will be BTC, the conversion  rate of bitcoin to USD, with data extracted from Yahoo Finance using the package quantmod in R.
