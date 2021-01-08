@@ -26,7 +26,8 @@ An important note is that stock return is not *always* stationary. As mentioned 
 
 
 
-The analyzed index used here will be BTC, the conversion  rate of bitcoin to USD, with data extracted from Yahoo Finance using the package quantmod in R.
+Here we are going to focus on forecasting of an equity return using the tidy model framework and focusing on longitudinal cross-validation, which can be implemented with parameter tuning. The analyzed index used here will be BTC, the conversion  rate of bitcoin to USD, with data extracted from Yahoo Finance using the package quantmod in R.
+
 ```{r}
 library(PerformanceAnalytics)
 library(quantmod)
