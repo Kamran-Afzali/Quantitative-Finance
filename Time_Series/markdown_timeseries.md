@@ -30,74 +30,234 @@ An important note is that stock return is not *always* stationary. As mentioned 
 
 Here we are going to focus on forecasting of an equity return using the tidy model framework and focusing on longitudinal cross-validation, which can be implemented with parameter tuning. The analyzed index used here will be BTC, the conversion  rate of bitcoin to USD, with data extracted from Yahoo Finance using the package quantmod in R.
 
-```{r}
+
+```r
 library(PerformanceAnalytics)
+```
+
+```
+## Loading required package: xts
+```
+
+```
+## Loading required package: zoo
+```
+
+```
+## 
+## Attaching package: 'zoo'
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+```
+
+```
+## 
+## Attaching package: 'PerformanceAnalytics'
+```
+
+```
+## The following object is masked from 'package:graphics':
+## 
+##     legend
+```
+
+```r
 library(quantmod)
+```
+
+```
+## Loading required package: TTR
+```
+
+```
+## Registered S3 method overwritten by 'quantmod':
+##   method            from
+##   as.zoo.data.frame zoo
+```
+
+```
+## Version 0.4-0 included new data defaults. See ?getSymbols.
+```
+
+```r
 library(tidyverse)
+```
+
+```
+## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
+```
+
+```
+## ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
+## ✓ tibble  3.0.4     ✓ dplyr   1.0.2
+## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
+## ✓ readr   1.4.0     ✓ forcats 0.5.0
+```
+
+```
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::first()  masks xts::first()
+## x dplyr::lag()    masks stats::lag()
+## x dplyr::last()   masks xts::last()
+```
+
+```r
 library(modeldata)
 library(forecast)
 library(tidymodels)
+```
+
+```
+## ── Attaching packages ────────────────────────────────────── tidymodels 0.1.2 ──
+```
+
+```
+## ✓ broom     0.7.2      ✓ rsample   0.0.8 
+## ✓ dials     0.0.9      ✓ tune      0.1.2 
+## ✓ infer     0.5.3      ✓ workflows 0.2.1 
+## ✓ parsnip   0.1.4      ✓ yardstick 0.0.7 
+## ✓ recipes   0.1.15
+```
+
+```
+## ── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
+## x yardstick::accuracy() masks forecast::accuracy()
+## x scales::discard()     masks purrr::discard()
+## x dplyr::filter()       masks stats::filter()
+## x dplyr::first()        masks xts::first()
+## x recipes::fixed()      masks stringr::fixed()
+## x dplyr::lag()          masks stats::lag()
+## x dplyr::last()         masks xts::last()
+## x yardstick::spec()     masks readr::spec()
+## x recipes::step()       masks stats::step()
+```
+
+```r
 library(modeltime)
+```
+
+```
+## 
+## Attaching package: 'modeltime'
+```
+
+```
+## The following object is masked from 'package:TTR':
+## 
+##     growth
+```
+
+```r
 library(timetk)
 library(lubridate)
 ```
 
+```
+## 
+## Attaching package: 'lubridate'
+```
 
-```{r}
+```
+## The following objects are masked from 'package:base':
+## 
+##     date, intersect, setdiff, union
+```
+
+
+
+```r
 BTC <- getSymbols("BTC-USD", src = "yahoo", from = "2013-01-01", to = "2020-11-01", auto.assign = FALSE)
+```
 
+```
+## 'getSymbols' currently uses auto.assign=TRUE by default, but will
+## use auto.assign=FALSE in 0.5-0. You will still be able to use
+## 'loadSymbols' to automatically load data. getOption("getSymbols.env")
+## and getOption("getSymbols.auto.assign") will still be checked for
+## alternate defaults.
+## 
+## This message is shown once per session and may be disabled by setting 
+## options("getSymbols.warning4.0"=FALSE). See ?getSymbols for details.
 ```
 A possibility given by quantmod is the calculation of returns for different periods. For example, it’s possible to calculate the returns by day, week, month, quarter and year, just by using the following commands:
 
-```{r}
+
+```r
 plot(dailyReturn(BTC))
+```
+
+![](markdown_timeseries_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
 plot(weeklyReturn(BTC))
 ```
+
+![](markdown_timeseries_files/figure-html/unnamed-chunk-3-2.png)<!-- -->
 Here we add the date column to the time-series data set.
-```{r}
+
+```r
 ts=as.data.frame(dailyReturn(BTC))
 ts$date=as.Date (row.names(ts)) 
 ```
 
 and split the data to trining and test fro cross validation.
-```{r}
+
+```r
 train_data <- training(initial_time_split(ts, prop = .8))
 test_data <- testing(initial_time_split(ts, prop = .8))
-
 ```
 Here is the visualization of propre training test split for time series data.
-```{r}
+
+```r
 train_data %>% mutate(type = "train") %>% 
   bind_rows(test_data %>% mutate(type = "test")) %>% 
   ggplot(aes(x = date, y =daily.returns, color = type)) + 
   geom_line()
 ```
 
+![](markdown_timeseries_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
 The model fitting procedure is similar to that tidy models, here is the example for an ARIMA model fitted on the training data,
-```{r}
+
+```r
 arima_model <- arima_reg() %>% 
   set_engine("auto_arima") %>% 
   fit(daily.returns~date, data = train_data)
 ```
 
+```
+## frequency = 7 observations per 1 week
+```
+
 
 a prophet regression model fitted on the training data,
-```{r}
+
+```r
 prophet_model <- prophet_reg() %>% 
   set_engine("prophet") %>% 
   fit(daily.returns~date, data = train_data)
 ```
 
+```
+## Disabling daily seasonality. Run prophet with daily.seasonality=TRUE to override this.
+```
+
 and a linear regression model fitted on the training data.
-```{r}
+
+```r
 tslm_model <- linear_reg() %>% 
   set_engine("lm") %>% 
   fit(daily.returns~as.numeric(date) + factor(month(date, label = TRUE)), data = train_data)
-
 ```
 
 In order to put all the results together and compare them you have to creat a tibble of the model out comes.
-```{r}
+
+```r
 forecast_table <- modeltime_table(
   arima_model,
   prophet_model,
@@ -107,18 +267,29 @@ forecast_table <- modeltime_table(
 
 
 Then to compare the performances the models should be fitted on the test data.
-```{r}
+
+```r
 forecast_table %>% 
   modeltime_calibrate(test_data) %>% 
   modeltime_accuracy()
 ```
 
-
-it is also possible to plot the comparative performance .
-```{r}
-forecast_table %>% 
-  modeltime_calibrate(test_data) %>% 
-  modeltime_forecast(actual_data = test_data) 
-#%>% plot_modeltime_forecast()
+```
+## # A tibble: 3 x 9
+##   .model_id .model_desc            .type    mae  mape  mase smape   rmse     rsq
+##       <int> <chr>                  <chr>  <dbl> <dbl> <dbl> <dbl>  <dbl>   <dbl>
+## 1         1 ARIMA(0,0,0)(1,0,1)[7… Test  0.0214  150. 0.640  162. 0.0356 2.17e-4
+## 2         2 PROPHET                Test  0.0217  182. 0.648  158. 0.0356 4.84e-3
+## 3         3 LM                     Test  0.0218  205. 0.651  153. 0.0358 1.00e-3
 ```
 
+
+it is also possible to plot the comparative performance .
+
+```r
+forecast_table %>% 
+  modeltime_calibrate(test_data) %>% 
+  modeltime_forecast(actual_data = test_data) #%>% 
+  plot_modeltime_forecast()
+```
+![](markdown_timeseries_files/figure-html/newplot.png)<!-- -->
