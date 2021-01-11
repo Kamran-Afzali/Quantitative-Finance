@@ -39,72 +39,14 @@ library(PerformanceAnalytics)
 ## Loading required package: xts
 ```
 
-```
-## Loading required package: zoo
-```
-
-```
-## 
-## Attaching package: 'zoo'
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-```
-
-```
-## 
-## Attaching package: 'PerformanceAnalytics'
-```
-
-```
-## The following object is masked from 'package:graphics':
-## 
-##     legend
-```
-
 ```r
 library(quantmod)
-```
-
-```
-## Loading required package: TTR
-```
-
-```
-## Registered S3 method overwritten by 'quantmod':
-##   method            from
-##   as.zoo.data.frame zoo
-```
-
-```
-## Version 0.4-0 included new data defaults. See ?getSymbols.
 ```
 
 ```r
 library(tidyverse)
 ```
 
-```
-## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
-```
-
-```
-## ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
-## ✓ tibble  3.0.4     ✓ dplyr   1.0.2
-## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
-## ✓ readr   1.4.0     ✓ forcats 0.5.0
-```
-
-```
-## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::first()  masks xts::first()
-## x dplyr::lag()    masks stats::lag()
-## x dplyr::last()   masks xts::last()
-```
 
 ```r
 library(modeldata)
@@ -112,44 +54,8 @@ library(forecast)
 library(tidymodels)
 ```
 
-```
-## ── Attaching packages ────────────────────────────────────── tidymodels 0.1.2 ──
-```
-
-```
-## ✓ broom     0.7.2      ✓ rsample   0.0.8 
-## ✓ dials     0.0.9      ✓ tune      0.1.2 
-## ✓ infer     0.5.3      ✓ workflows 0.2.1 
-## ✓ parsnip   0.1.4      ✓ yardstick 0.0.7 
-## ✓ recipes   0.1.15
-```
-
-```
-## ── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
-## x yardstick::accuracy() masks forecast::accuracy()
-## x scales::discard()     masks purrr::discard()
-## x dplyr::filter()       masks stats::filter()
-## x dplyr::first()        masks xts::first()
-## x recipes::fixed()      masks stringr::fixed()
-## x dplyr::lag()          masks stats::lag()
-## x dplyr::last()         masks xts::last()
-## x yardstick::spec()     masks readr::spec()
-## x recipes::step()       masks stats::step()
-```
-
 ```r
 library(modeltime)
-```
-
-```
-## 
-## Attaching package: 'modeltime'
-```
-
-```
-## The following object is masked from 'package:TTR':
-## 
-##     growth
 ```
 
 ```r
@@ -157,33 +63,10 @@ library(timetk)
 library(lubridate)
 ```
 
-```
-## 
-## Attaching package: 'lubridate'
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     date, intersect, setdiff, union
-```
-
-
-
 ```r
 BTC <- getSymbols("BTC-USD", src = "yahoo", from = "2013-01-01", to = "2020-11-01", auto.assign = FALSE)
 ```
 
-```
-## 'getSymbols' currently uses auto.assign=TRUE by default, but will
-## use auto.assign=FALSE in 0.5-0. You will still be able to use
-## 'loadSymbols' to automatically load data. getOption("getSymbols.env")
-## and getOption("getSymbols.auto.assign") will still be checked for
-## alternate defaults.
-## 
-## This message is shown once per session and may be disabled by setting 
-## options("getSymbols.warning4.0"=FALSE). See ?getSymbols for details.
-```
 A possibility given by quantmod is the calculation of returns for different periods. For example, it’s possible to calculate the returns by day, week, month, quarter and year, just by using the following commands:
 
 
