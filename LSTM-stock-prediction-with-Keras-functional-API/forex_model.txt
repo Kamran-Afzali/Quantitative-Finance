@@ -1,0 +1,431 @@
+#import pandas
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import datetime
+
+from tensorflow.keras.mixed_precision import experimental as mixed_precision
+import tensorflow as tf
+from tensorflow.keras import layers
+from tensorflow.keras.layers import BatchNormalization
+
+import tensorflow_addons as tfa
+
+import matplotlib.style
+import matplotlib as mpl
+mpl.style.use('ggplot')
+
+from matplotlib.pylab import rcParams
+rcParams['figure.figsize'] = 20, 10
+
+from sklearn import metrics
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import RobustScaler
+from sklearn.preprocessing import PowerTransformer
+from sklearn.preprocessing import QuantileTransformer
+from sklearn.preprocessing import MaxAbsScaler
+scaler = MinMaxScaler(feature_range=(0, 1))
+scaler2 = MinMaxScaler(feature_range=(0, 1))
+scaler3 = MinMaxScaler(feature_range=(0, 1))
+
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard
+
+
+
+es = EarlyStopping(monitor='val_loss', min_delta=1e-10, patience=10, verbose=1)
+rlr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=1)
+mcp = ModelCheckpoint(filepath='weights.h5', monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=True)
+
+tb = TensorBoard('logs')
+
+
+
+
+
+
+
+
+##
+##def scaler(self,x):
+##    scaler = tf.nn.batch_normalization(x,tf.raw_ops.Mean(x),tf.math.reduce_std(x)))
+
+
+
+##scaler = MaxAbsScaler()
+##scaler = StandardScaler()
+##scaler = Normalizer()
+##scaler = QuantileTransformer(output_distribution='normal',copy=False)
+##scaler = RobustScaler()
+##scaler = PowerTransformer()
+
+
+
+##new_policy = mixed_precision.Policy('float64')
+
+
+#get data
+def GetData(fileName):
+    return pd.read_csv(fileName,header=0,parse_dates=[0])
+
+
+#read time series from the exchange.csv file 
+exchangeRatesSeries = GetData('GBPUSD_M30.csv')
+
+
+lr_data = pd.DataFrame(exchangeRatesSeries,index=range(0, len(exchangeRatesSeries)))
+
+
+
+
+# We'll create a separate dataset so that new features don't mess up the original data.
+print("Finished copying from CSV and dropping columns",lr_data.columns)
+
+
+print("Date conversion")
+lr_data['Date'] = pd.to_datetime(lr_data.Date, format='%Y-%m-%d')
+print("Date conversion complete")
+
+
+
+print("Sorting by date")
+lr_data = lr_data.sort_values(by='Date')
+print("Finished sorting")
+
+
+
+length = len(lr_data['Date'])
+def iterate_it(frame):
+    print('mem: ',frame.memory_usage())
+    for index, row in frame.iterrows():
+        frame['Date'].replace({frame['Date'][index]: frame['Date'][index].toordinal()}, inplace=True)
+        if(int(index)==(int(length/100))):
+            print("1%")
+        if(int(index)==(int(length/10))):
+            print("10%")
+        if(int(index)==(int(length/2))):
+            print("Halfway there")
+    return frame['Date']
+
+
+date_store = lr_data['Date'].to_frame()
+print('Replacing with ordinals, len= ',length)
+
+
+lr_data['Date'] = iterate_it(lr_data)
+print('Finished replacing with ordinals')
+
+
+
+
+
+
+##lr_data.drop(columns=['Volume'],inplace = True)
+
+print(len(lr_data.values))
+
+##lr_data_temp = np.asarray(tf.reshape(lr_data, (len(lr_data.values)),1))
+
+##print(lr_data_temp)
+##print(type(lr_data_temp))
+##print(len(lr_data_temp))
+print(len(lr_data['GBP/USD Close']))
+
+print(type(lr_data))
+print(type(lr_data))
+
+
+ans = lr_data.to_numpy()
+print()
+
+
+print(type(ans[0]))
+ans2 = [y for x, y in date_store.groupby('Date', as_index=False)]
+
+print('ans',ans[1])
+
+slice_size = int(length*.75)
+
+
+print(slice_size)
+
+
+
+train = ans[:slice_size]
+
+val_size = int(len(train)*.1)
+print(len(train))
+
+val = train[:val_size]
+
+train = ans[:(slice_size+val_size)]
+##train = scaler.fit_transform(train)
+
+
+print('val: ',val)
+
+
+
+print(len(train))
+print(len(ans))
+
+print(train[0])
+date_store_first = ans2[:(slice_size+val_size)]
+
+print(float(train[0][0]))
+
+
+##Normalize train, test, and val
+
+
+
+
+
+
+
+
+train1 = pd.DataFrame(train,index=range(0, len(train)),columns=('Date','Open','High','Low','GBP/USD Close','Volume'))
+print(train1)
+print(train1.columns)
+
+
+val1 = pd.DataFrame(val,index=range(0, len(val)),columns=('Date','Open','High','Low','GBP/USD Close','Volume'))
+
+test = ans[slice_size:]
+
+
+print('fixed datestore? ',date_store_first[0].Date)
+print('fixed datestore type? ',type(date_store_first))
+
+date_store_second = ans2[slice_size:]
+
+test1 = pd.DataFrame(test,index=range(0, len(test)),columns=('Date','Open','High','Low','GBP/USD Close','Volume'))
+
+
+x_train = train1.drop(columns=['GBP/USD Close'],inplace = False)
+
+print(x_train.shape)
+print(x_train)
+
+
+x_train = pd.DataFrame(x_train,index=range(0, len(train)),columns=('Date','Open','High','Low','Volume'))
+print(x_train.shape)
+y_train = pd.DataFrame(train1,index=range(0, len(train)),columns=(['GBP/USD Close']))
+
+x_val = pd.DataFrame(val1,index=range(0, len(val)),columns=('Date','Open','High','Low','Volume'))
+y_val = pd.DataFrame(val1,index=range(0, len(val)),columns=(['GBP/USD Close']))
+
+
+
+
+x_test = pd.DataFrame(test1,index=range(0, len(test)),columns=('Date','Open','High','Low','Volume'))
+y_test = pd.DataFrame(test1,index=range(0, len(test)),columns=(['GBP/USD Close']))
+
+
+
+
+
+
+##model = tf.keras.models.Sequential()
+##model.add(tf.keras.layers.Dense(100, activation=tf.nn.relu))
+##model.add(tf.keras.layers.Dense(100, activation=tf.nn.relu))
+##model.add(tf.keras.layers.Dense(1, activation='linear'))
+
+x_train = x_train.to_numpy()
+x_train = x_train.reshape(len(x_train),1,5)
+print(x_train)
+print(x_train.shape)
+##x_test = scaler2.fit_transform(x_test.to_numpy())
+##
+x_test = x_test.to_numpy().reshape(len(x_test),1,5)
+
+
+
+y_train = y_train.to_numpy()
+y_train = y_train.reshape(len(y_train),1,1)
+
+##y_test = scaler3.fit_transform(y_test.to_numpy())
+y_test = y_test.to_numpy().reshape(len(y_test),1,1)
+
+
+x_val = x_val.to_numpy()
+x_val = x_val.reshape(len(x_val),1,5)
+
+
+y_val = y_val.to_numpy()
+y_val = y_val.reshape(len(y_val),1,1)
+
+from tensorflow.keras.layers.experimental import preprocessing
+normalizer = preprocessing.Normalization()
+
+normalizer.adapt(x_train)
+
+
+print(train1.shape[1]-1)
+
+data_in= tf.keras.layers.Input((train1.shape[1]-1,5,) )
+
+x = normalizer(data_in)
+
+hidden1 =tf.keras.layers.Dense(16,activation = tfa.activations.mish)(x)
+
+
+hidden2 = tf.keras.layers.LSTM(16,return_sequences = True, return_state = True,dropout = .1)(hidden1)
+
+
+
+
+##model.add(tf.keras.layers.LSTM(100,time_major = True))
+##
+##model.add(tf.keras.layers.LSTM(100,dropout=.2,time_major = True))
+##
+##
+##model.add(tf.keras.layers.LSTM(100,time_major = True))
+
+hidden3 =tf.keras.layers.LSTM(16,dropout=.2)(hidden2)
+
+##dropout1 = tf.keras.layers.Dropout(.2)(hidden2,training=True)
+
+
+hidden4 =tf.keras.layers.Dense(16,activation = 'relu')(hidden3)
+
+##dropout2 = tf.keras.layers.Dropout(.2)(hidden3,training=True)
+
+
+output = tf.keras.layers.Dense(1,activation='linear')(hidden4)
+
+model = tf.keras.models.Model(inputs=data_in, outputs = output)
+
+
+model.compile(optimizer=tf.optimizers.Adagrad(learning_rate=0.001), loss='mean_squared_error')
+
+##lr_data['Predictions'] = 0
+##
+##lr_data = pd.DataFrame(scaler.fit_transform(lr_data),columns=('Date','Open','High','Low','GBP/USD Close','Volume','Predictions'))
+
+
+
+
+print(lr_data)
+with tf.device('/GPU:0'):
+##    x_tf_train = tf.convert_to_tensor(x_train)
+##    print(x_tf_train.shape)
+##    y_tf_train = tf.convert_to_tensor(y_train)
+##    print(y_tf_train.shape)
+##
+##    x_tf_val = tf.convert_to_tensor(x_val)
+##    y_tf_val = tf.convert_to_tensor(y_val)
+##    x_tf_test = tf.convert_to_tensor(x_test)
+##    y_tf_test = tf.convert_to_tensor(y_test)
+
+
+    history = model.fit(x_train, y_train, epochs=10,use_multiprocessing = True,batch_size = 16,callbacks=[es, rlr, mcp, tb],validation_data=(x_val, y_val))
+    print(history.history)
+    print("Evaluate on test data")
+    results = model.evaluate(x_test,y_test,batch_size=128)
+    print("test loss, test acc:", results)
+    preds = model.predict(x_test)
+print(preds)
+
+##preds = scaler3.inverse_transform(preds)
+print(preds.shape)
+print(preds)
+##preds = scaler3.inverse_transform(preds)
+print(model.summary())
+
+m = tf.keras.metrics.RootMeanSquaredError()
+print(type(m))
+m.update_state(y_test,preds)
+print(type(m))
+
+m = m.result().numpy()
+
+rmse = m
+print(rmse)
+
+
+temp=pd.DataFrame(index=range(0, len(preds)),columns=('Date','Predictions'))
+for i in range(0,len(preds)):
+    temp['Date'][i] =  test1['Date'][i]
+    temp['Predictions'][i] = float(preds[i])
+    
+preds=pd.DataFrame(index=range(0, len(preds)))
+
+preds = temp
+
+
+
+
+date_temp1=pd.DataFrame(index=range(0, len(date_store_first)),columns=(['Date']))
+
+for i in range(0,len(date_temp1)):
+    date_temp1['Date'][i] =  date_store_first[i].Date.values[0]
+##    date_temp1['Date'].apply(pd.to_datetime(date_temp1['Date'][i], format='%Y-%m-%d'))
+date_temp2=pd.DataFrame(index=range(0, len(date_store_second)),columns=(['Date']))
+for i in range(0,len(date_temp2)):
+    date_temp2['Date'][i] =  date_store_second[i].Date.values[0]
+    
+##date_store_first = pd.DataFrame(date_temp1.values,index=range(0, len(date_store_first)),columns=(['Date']))
+##date_store_second = pd.DataFrame(date_temp2,index=range(0, len(date_store_second)),columns=(['Date']))
+print(type(date_temp1.Date))
+date_temp1['Date'] = pd.to_datetime(date_temp1.Date.values, format='%Y-%m-%d')
+date_temp2['Date'] = pd.to_datetime(date_temp2.Date.values, format='%Y-%m-%d')
+
+
+print(len(train))
+
+##train1 = scaler.inverse_transform(train1)
+train1 = pd.DataFrame(train1,columns=('Date','Open','High','Low','GBP/USD Close','Volume'))
+
+print(type(temp))
+
+print(x_test)
+print(x_test.shape)
+
+##x_test = scaler2.inverse_transform(np.squeeze(x_test))
+x_test = pd.DataFrame(x_test.squeeze(),columns=('Date','Open','High','Low','Volume'))
+
+test1 = pd.DataFrame(test1,columns=('Date','Open','High','Low','GBP/USD Close','Volume'))
+
+test1['Open'] = x_test['Open']
+test1['High'] = x_test['High']
+test1['Low'] = x_test['Low']
+test1['Volume'] = x_test['Volume']
+
+
+test1['Predictions'] = temp['Predictions']
+train1['Predictions'] = temp['Predictions']
+
+print(test1.shape)
+
+
+
+
+train1['Date'] = date_temp1
+
+print(type(test1))
+print(test1.shape)
+##test1 = pd.DataFrame(test1,columns=('Date','Open','High','Low','GBP/USD Close','Volume','Predictions'))
+
+test1['Date'] = date_temp2
+
+                                              
+print(train1)
+
+print(test1)
+
+print(test1['Predictions'])
+plt.plot(train1['Date'],train1['GBP/USD Close'])
+plt.plot(test1['Date'],test1[['Predictions','GBP/USD Close']])
+plt.xlabel('Date')
+plt.ylabel('Close')
+
+plt.xlim(train1.Date.min(),test1.Date.max())
+plt.ylim(0,train1['GBP/USD Close'].max())
+
+plt.title('compare')
+
+##print(model.score(x_test,y_test))
+
+plt.show()
