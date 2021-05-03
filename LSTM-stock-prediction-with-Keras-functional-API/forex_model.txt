@@ -25,6 +25,9 @@ from sklearn.preprocessing import RobustScaler
 from sklearn.preprocessing import PowerTransformer
 from sklearn.preprocessing import QuantileTransformer
 from sklearn.preprocessing import MaxAbsScaler
+
+
+
 scaler = MinMaxScaler(feature_range=(0, 1))
 scaler2 = MinMaxScaler(feature_range=(0, 1))
 scaler3 = MinMaxScaler(feature_range=(0, 1))
