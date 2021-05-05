@@ -1,4 +1,10 @@
-```python
+Introduction
+
+As indicated in a previous blog post, time-series models are designed to predict future values based on previously observed values. In other words the input is a signal (time-series) that is defined by observations taken sequentially in time. However, time-series forecasting models such as ARIMA has it own limitations when it comes to non-stationary data (i.e. where statistical properties e.g. the mean and standard deviation are not constant over time but instead, these metrics vary over time). An examples of non-stationary time-series stock price (not to be confused with stock returns) over time.
+
+As discussed in a previous blog post [here](https://kamran-afzali.github.io/posts/2021-01-14/Stock_TS_R.html) there have been attempts to predict stock outcomes (e.g. price, return. etc.) using time series analysis algorithms, though the performance is sub par and cannot be used to efficiently predict the market.
+
+``` {.python}
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,8 +15,7 @@ from yahoofinancials import YahooFinancials
 %matplotlib inline
 ```
 
-
-```python
+``` {.python}
 appl_df = yf.download('AAPL', 
                       start='2018-01-01', 
                       end='2019-12-31', 
@@ -18,121 +23,28 @@ appl_df = yf.download('AAPL',
 appl_df.head()
 ```
 
+|            | Open      | High      | Low       | Close     | Adj Close | Volume    |
+|------------|-----------|-----------|-----------|-----------|-----------|-----------|
+| Date       |           |           |           |           |           |           |
+| 2018-01-02 | 42.540001 | 43.075001 | 42.314999 | 43.064999 | 41.380238 | 102223600 |
+| 2018-01-03 | 43.132500 | 43.637501 | 42.990002 | 43.057499 | 41.373032 | 118071600 |
+| 2018-01-04 | 43.134998 | 43.367500 | 43.020000 | 43.257500 | 41.565216 | 89738400  |
+| 2018-01-05 | 43.360001 | 43.842499 | 43.262501 | 43.750000 | 42.038452 | 94640000  |
+| 2018-01-08 | 43.587502 | 43.902500 | 43.482498 | 43.587502 | 41.882305 | 82271200  |
 
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Open</th>
-      <th>High</th>
-      <th>Low</th>
-      <th>Close</th>
-      <th>Adj Close</th>
-      <th>Volume</th>
-    </tr>
-    <tr>
-      <th>Date</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2018-01-02</th>
-      <td>42.540001</td>
-      <td>43.075001</td>
-      <td>42.314999</td>
-      <td>43.064999</td>
-      <td>41.380238</td>
-      <td>102223600</td>
-    </tr>
-    <tr>
-      <th>2018-01-03</th>
-      <td>43.132500</td>
-      <td>43.637501</td>
-      <td>42.990002</td>
-      <td>43.057499</td>
-      <td>41.373032</td>
-      <td>118071600</td>
-    </tr>
-    <tr>
-      <th>2018-01-04</th>
-      <td>43.134998</td>
-      <td>43.367500</td>
-      <td>43.020000</td>
-      <td>43.257500</td>
-      <td>41.565216</td>
-      <td>89738400</td>
-    </tr>
-    <tr>
-      <th>2018-01-05</th>
-      <td>43.360001</td>
-      <td>43.842499</td>
-      <td>43.262501</td>
-      <td>43.750000</td>
-      <td>42.038452</td>
-      <td>94640000</td>
-    </tr>
-    <tr>
-      <th>2018-01-08</th>
-      <td>43.587502</td>
-      <td>43.902500</td>
-      <td>43.482498</td>
-      <td>43.587502</td>
-      <td>41.882305</td>
-      <td>82271200</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
-```python
+``` {.python}
 appl_df['Open'].plot(title="Apple's stock price")
 ```
 
-
-
-
     <AxesSubplot:title={'center':"Apple's stock price"}, xlabel='Date'>
 
-
-
-
-    
 ![png](output_files/output_2_1.png)
-    
 
-
-
-```python
+``` {.python}
 sc = MinMaxScaler(feature_range = (0, 1))
 ```
 
-
-```python
+``` {.python}
 def preproc( data, lag, ratio):
     data=data.dropna().iloc[:, 0:1]
     Dates=data.index.unique()
@@ -149,25 +61,17 @@ def preproc( data, lag, ratio):
     return X_data_train,X_data_test,y_data_train,y_data_test,Dates;
 ```
 
-
-```python
+``` {.python}
 a,b,c,d,e=preproc(appl_df, 25, 0.90)
 ```
 
-
-```python
+``` {.python}
 a.shape
 ```
 
-
-
-
     (430, 24)
 
-
-
-
-```python
+``` {.python}
 spy_df = yf.download('SPY', 
                       start='2018-01-01', 
                       end='2019-12-31', 
@@ -175,10 +79,9 @@ spy_df = yf.download('SPY',
 spy_df.head()
 ```
 
-
-
-
 <div>
+
+```{=html}
 <style scoped>
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -192,81 +95,19 @@ spy_df.head()
         text-align: right;
     }
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Open</th>
-      <th>High</th>
-      <th>Low</th>
-      <th>Close</th>
-      <th>Adj Close</th>
-      <th>Volume</th>
-    </tr>
-    <tr>
-      <th>Date</th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2018-01-02</th>
-      <td>267.839996</td>
-      <td>268.809998</td>
-      <td>267.399994</td>
-      <td>268.769989</td>
-      <td>253.283142</td>
-      <td>86655700</td>
-    </tr>
-    <tr>
-      <th>2018-01-03</th>
-      <td>268.959991</td>
-      <td>270.640015</td>
-      <td>268.959991</td>
-      <td>270.470001</td>
-      <td>254.885162</td>
-      <td>90070400</td>
-    </tr>
-    <tr>
-      <th>2018-01-04</th>
-      <td>271.200012</td>
-      <td>272.160004</td>
-      <td>270.540009</td>
-      <td>271.609985</td>
-      <td>255.959488</td>
-      <td>80636400</td>
-    </tr>
-    <tr>
-      <th>2018-01-05</th>
-      <td>272.510010</td>
-      <td>273.559998</td>
-      <td>271.950012</td>
-      <td>273.420013</td>
-      <td>257.665283</td>
-      <td>83524000</td>
-    </tr>
-    <tr>
-      <th>2018-01-08</th>
-      <td>273.309998</td>
-      <td>274.100006</td>
-      <td>272.980011</td>
-      <td>273.920013</td>
-      <td>258.136414</td>
-      <td>57319200</td>
-    </tr>
-  </tbody>
-</table>
+```
+|            | Open       | High       | Low        | Close      | Adj Close  | Volume   |
+|------------|------------|------------|------------|------------|------------|----------|
+| Date       |            |            |            |            |            |          |
+| 2018-01-02 | 267.839996 | 268.809998 | 267.399994 | 268.769989 | 253.283142 | 86655700 |
+| 2018-01-03 | 268.959991 | 270.640015 | 268.959991 | 270.470001 | 254.885162 | 90070400 |
+| 2018-01-04 | 271.200012 | 272.160004 | 270.540009 | 271.609985 | 255.959488 | 80636400 |
+| 2018-01-05 | 272.510010 | 273.559998 | 271.950012 | 273.420013 | 257.665283 | 83524000 |
+| 2018-01-08 | 273.309998 | 274.100006 | 272.980011 | 273.920013 | 258.136414 | 57319200 |
+
 </div>
 
-
-
-
-```python
+``` {.python}
 def preproc2( data1, data2, lag, ratio):
     common_dates=list(set(data1.index) & set(data2.index))
     data1=data1[data1.index.isin(common_dates)]
@@ -276,20 +117,17 @@ def preproc2( data1, data2, lag, ratio):
     return X1,X2;
 ```
 
-
-```python
+``` {.python}
 dataLSTM=preproc2( spy_df, appl_df, 25, 0.90)
 ```
 
-
-```python
+``` {.python}
 dataLSTM[0][2]
 ```
 
-
-
-
 <div>
+
+```{=html}
 <style scoped>
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -303,78 +141,37 @@ dataLSTM[0][2]
         text-align: right;
     }
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Open</th>
-    </tr>
-    <tr>
-      <th>Date</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2018-02-06</th>
-      <td>0.273100</td>
-    </tr>
-    <tr>
-      <th>2018-02-07</th>
-      <td>0.370628</td>
-    </tr>
-    <tr>
-      <th>2018-02-08</th>
-      <td>0.365045</td>
-    </tr>
-    <tr>
-      <th>2018-02-09</th>
-      <td>0.282898</td>
-    </tr>
-    <tr>
-      <th>2018-02-12</th>
-      <td>0.317420</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>2019-10-15</th>
-      <td>0.696480</td>
-    </tr>
-    <tr>
-      <th>2019-10-16</th>
-      <td>0.710949</td>
-    </tr>
-    <tr>
-      <th>2019-10-17</th>
-      <td>0.725874</td>
-    </tr>
-    <tr>
-      <th>2019-10-18</th>
-      <td>0.714595</td>
-    </tr>
-    <tr>
-      <th>2019-10-21</th>
-      <td>0.722912</td>
-    </tr>
-  </tbody>
-</table>
-<p>430 rows × 1 columns</p>
+```
+|            | Open     |
+|------------|----------|
+| Date       |          |
+| 2018-02-06 | 0.273100 |
+| 2018-02-07 | 0.370628 |
+| 2018-02-08 | 0.365045 |
+| 2018-02-09 | 0.282898 |
+| 2018-02-12 | 0.317420 |
+| ...        | ...      |
+| 2019-10-15 | 0.696480 |
+| 2019-10-16 | 0.710949 |
+| 2019-10-17 | 0.725874 |
+| 2019-10-18 | 0.714595 |
+| 2019-10-21 | 0.722912 |
+
+<p>
+
+430 rows × 1 columns
+
+</p>
+
 </div>
 
-
-
-
-```python
+``` {.python}
 dataLSTM[1][2]
 ```
 
-
-
-
 <div>
+
+```{=html}
 <style scoped>
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -388,71 +185,31 @@ dataLSTM[1][2]
         text-align: right;
     }
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Open</th>
-    </tr>
-    <tr>
-      <th>Date</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2018-02-06</th>
-      <td>0.073739</td>
-    </tr>
-    <tr>
-      <th>2018-02-07</th>
-      <td>0.129876</td>
-    </tr>
-    <tr>
-      <th>2018-02-08</th>
-      <td>0.110847</td>
-    </tr>
-    <tr>
-      <th>2018-02-09</th>
-      <td>0.088963</td>
-    </tr>
-    <tr>
-      <th>2018-02-12</th>
-      <td>0.098682</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>2019-10-15</th>
-      <td>0.628041</td>
-    </tr>
-    <tr>
-      <th>2019-10-16</th>
-      <td>0.607517</td>
-    </tr>
-    <tr>
-      <th>2019-10-17</th>
-      <td>0.619206</td>
-    </tr>
-    <tr>
-      <th>2019-10-18</th>
-      <td>0.615808</td>
-    </tr>
-    <tr>
-      <th>2019-10-21</th>
-      <td>0.635721</td>
-    </tr>
-  </tbody>
-</table>
-<p>430 rows × 1 columns</p>
+```
+|            | Open     |
+|------------|----------|
+| Date       |          |
+| 2018-02-06 | 0.073739 |
+| 2018-02-07 | 0.129876 |
+| 2018-02-08 | 0.110847 |
+| 2018-02-09 | 0.088963 |
+| 2018-02-12 | 0.098682 |
+| ...        | ...      |
+| 2019-10-15 | 0.628041 |
+| 2019-10-16 | 0.607517 |
+| 2019-10-17 | 0.619206 |
+| 2019-10-18 | 0.615808 |
+| 2019-10-21 | 0.635721 |
+
+<p>
+
+430 rows × 1 columns
+
+</p>
+
 </div>
 
-
-
-
-```python
+``` {.python}
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
@@ -460,37 +217,26 @@ import keras.backend as K
 from keras.callbacks import EarlyStopping
 ```
 
-
-```python
+``` {.python}
 a = a.values
 b= b.values
 
 c = c.values
 d = d.values
-
-
 ```
 
-
-```python
+``` {.python}
 X_train_t = a.reshape(a.shape[0], 1, 24)
 X_test_t = b.reshape(b.shape[0], 1, 24)
 ```
 
-
-```python
+``` {.python}
 X_test_t.shape
 ```
 
-
-
-
     (47, 1, 24)
 
-
-
-
-```python
+``` {.python}
 K.clear_session()
 early_stop = EarlyStopping(monitor='loss', patience=1, verbose=1)
 model = Sequential()
@@ -501,8 +247,7 @@ model.add(Dense(1))
 model.compile(loss='mean_squared_error', optimizer='adam')
 ```
 
-
-```python
+``` {.python}
 model.fit(X_train_t, c,
           epochs=100, batch_size=1, verbose=1,
           callbacks=[early_stop])
@@ -532,10 +277,7 @@ model.fit(X_train_t, c,
 
     <tensorflow.python.keras.callbacks.History at 0x7fdd805fdf10>
 
-
-
-
-```python
+``` {.python}
 ypredr=[]
 st=X_test_t[0].reshape(1, 1, 24)
 tmp=st
@@ -550,21 +292,15 @@ for i in range(1, X_test_t.shape[0]):
     ypredr.append(val.tolist()[0])
 ```
 
-
-```python
+``` {.python}
 plt.plot(ypredr,color="green", label = "Rolling prediction")
 plt.legend()
 plt.show()
 ```
 
-
-    
 ![png](output_files/output_19_0.png)
-    
 
-
-
-```python
+``` {.python}
 y_pred = model.predict(X_test_t)
 plt.plot(d, label = "Real data")
 plt.plot(y_pred, label = "One point prediction")
@@ -573,14 +309,9 @@ plt.legend()
 plt.show()
 ```
 
-
-    
 ![png](output_files/output_20_0.png)
-    
 
-
-
-```python
+``` {.python}
 Aa = dataLSTM[0][0].values
 Ab = dataLSTM[0][1].values
 
@@ -590,8 +321,7 @@ X_train_A = Aa.reshape(Aa.shape[0], 1, 24)
 X_test_A = Ab.reshape(Ab.shape[0], 1, 24)
 ```
 
-
-```python
+``` {.python}
 Sa = dataLSTM[1][0].values
 Sb = dataLSTM[1][1].values
 
@@ -601,8 +331,7 @@ X_train_S = Sa.reshape(Sa.shape[0], 1, 24)
 X_test_S = Sb.reshape(Sb.shape[0], 1, 24)
 ```
 
-
-```python
+``` {.python}
 from keras.layers import concatenate
 from keras.layers import Dropout
 from keras.models import Sequential
@@ -612,12 +341,9 @@ from keras.callbacks import EarlyStopping
 from keras.layers import LSTM
 from keras.models import Input, Model
 from keras.layers import Dense
-
-
 ```
 
-
-```python
+``` {.python}
 early_stop = EarlyStopping(monitor='loss', patience=1, verbose=1)
 input1 = Input(shape=(1,24)) # for the three columns of dat_train
 x1 = LSTM(6)(input1)
@@ -633,8 +359,7 @@ n_net = Model(inputs=[input1, input2], outputs=output)
 n_net.compile(loss='mean_squared_error', optimizer='adam')
 ```
 
-
-```python
+``` {.python}
 n_net.fit(x=[X_train_A, X_train_S], y=Ac, epochs=10, batch_size=1, verbose=1,
           callbacks=[early_stop])
 ```
@@ -665,10 +390,7 @@ n_net.fit(x=[X_train_A, X_train_S], y=Ac, epochs=10, batch_size=1, verbose=1,
 
     <tensorflow.python.keras.callbacks.History at 0x7fddb3d0f850>
 
-
-
-
-```python
+``` {.python}
 y_pred = n_net.predict([X_test_A,X_test_S])
 plt.plot(Ad, label = "Real data")
 plt.plot(y_pred, label = "One point prediction")
@@ -676,14 +398,9 @@ plt.legend()
 plt.show()
 ```
 
-
-    
 ![png](output_files/output_26_0.png)
-    
 
-
-
-```python
+``` {.python}
 ypredr=[]
 st=X_test_A[0].reshape(1, 1, 24)
 sst=X_test_S[0].reshape(1, 1, 24)
@@ -700,21 +417,15 @@ for i in range(1, X_test_t.shape[0]):
     ypredr.append(val.tolist()[0])
 ```
 
-
-```python
+``` {.python}
 plt.plot(ypredr, color="green", label = "Rolling prediction")
 plt.legend()
 plt.show()
 ```
 
-
-    
 ![png](output_files/output_28_0.png)
-    
 
-
-
-```python
+``` {.python}
 y_pred = n_net.predict([X_test_A,X_test_S])
 plt.plot(Ad, label = "Real data")
 plt.plot(y_pred, label = "One point prediction")
@@ -723,13 +434,7 @@ plt.legend()
 plt.show()
 ```
 
-
-    
 ![png](output_files/output_29_0.png)
-    
 
-
-
-```python
-
+``` {.python}
 ```
