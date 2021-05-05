@@ -1,151 +1,440 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 Introduction
 
-As indicated in a previous blog post, time-series models are designed to
-predict future values based on previously observed values. In other
-words the input is a signal (time-series) that is defined by
-observations taken sequentially in time. However, time-series
-forecasting models such as ARIMA has it own limitations when it comes to
-non-stationary data (i.e. where statistical properties e.g. the mean and
-standard deviation are not constant over time but instead, these metrics
-vary over time). An examples of non-stationary time-series stock price
-(not to be confused with stock returns) over time.
+As indicated in a previous blog post, time-series models are designed to predict future values based on previously observed values. In other words the input is a signal (time-series) that is defined by observations taken sequentially in time. However, time-series forecasting models such as ARIMA has it own limitations when it comes to non-stationary data (i.e. where statistical properties e.g. the mean and standard deviation are not constant over time but instead, these metrics vary over time). An examples of non-stationary time-series stock price (not to be confused with stock returns) over time.
 
-As discussed in a previous blog post
-[here](https://kamran-afzali.github.io/posts/2021-01-14/Stock_TS_R.html)
-there have been attempts to predict stock outcomes (e.g. price, return.
-etc.) using time series analysis algorithms, though the performance is
-sub par and cannot be used to efficiently predict the market.
+As discussed in a previous blog post [here](https://kamran-afzali.github.io/posts/2021-01-14/Stock_TS_R.html) there have been attempts to predict stock outcomes (e.g. price, return. etc.) using time series analysis algorithms, though the performance is sub par and cannot be used to efficiently predict the market.
 
-This is just a tutorial article that does not intent in any way to
-"direct" people into buying stocks. 2. The LSTM model Long short-term
-memory (LSTM) is an artificial recurrent neural network (RNN)
-architecture used in the field of deep learning. Unlike standard
-feedforward neural networks, LSTM has feedback connections. It can not
-only process single data points (e.g. images), but also entire sequences
-of data (such as speech or video inputs). LSTM models are able to store
-information over a period of time. In order words, they have a memory
-capacity. Remember that LSTM stands for Long Short-Term Memory Model.
-This characteristic is extremely useful when we deal with Time-Series or
-Sequential Data. When using an LSTM model we are free and able to decide
-what information will be stored and what discarded. We do that using the
-"gates". The deep understanding of the LSTM is outside the scope of this
-post but if you are interested in learning more, have a look at the
-references at the end of this post. 3. Getting the stock price history
-data Thanks to Yahoo finance we can get the data for free. Use the
-following link to get the stock price history of TESLA:   In this
-tutorial, we'll build a Python deep learning model that will predict the
-future behavior of stock prices. We assume that the reader is familiar
-with the concepts of deep learning in Python, especially Long Short-Term
-Memory. While predicting the actual price of a stock is an uphill climb,
-we can build a model that will predict whether the price will go up or
-down. The data and notebook used for this tutorial can be found here.
-It's important to note that there are always other factors that affect
-the prices of stocks, such as the political atmosphere and the market.
-However, we won't focus on those factors for this tutorial.
+``` {.python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+import yfinance as yf
+from yahoofinancials import YahooFinancials
+%matplotlib inline
+```
 
-Introduction
+``` {.python}
+appl_df = yf.download('AAPL', 
+                      start='2018-01-01', 
+                      end='2019-12-31', 
+                      progress=False)
+appl_df.head()
+```
 
-LSTMs are very powerful in sequence prediction problems because they're
-able to store past information. This is important in our case because
-the previous price of a stock is crucial in predicting its future price.
-We'll kick of by importing NumPy for scientific computation, Matplotlib
-for plotting graphs, and Pandas to aide in loading and manipulating our
-datasets.
+|            | Open      | High      | Low       | Close     | Adj Close | Volume    |
+|------------|-----------|-----------|-----------|-----------|-----------|-----------|
+| Date       |           |           |           |           |           |           |
+| 2018-01-02 | 42.540001 | 43.075001 | 42.314999 | 43.064999 | 41.380238 | 102223600 |
+| 2018-01-03 | 43.132500 | 43.637501 | 42.990002 | 43.057499 | 41.373032 | 118071600 |
+| 2018-01-04 | 43.134998 | 43.367500 | 43.020000 | 43.257500 | 41.565216 | 89738400  |
+| 2018-01-05 | 43.360001 | 43.842499 | 43.262501 | 43.750000 | 42.038452 | 94640000  |
+| 2018-01-08 | 43.587502 | 43.902500 | 43.482498 | 43.587502 | 41.882305 | 82271200  |
 
-Loading the Dataset
+``` {.python}
+appl_df['Open'].plot(title="Apple's stock price")
+```
 
-The next step is to load in our training dataset and select the Open and
-Highcolumns that we'll use in our modeling.
+    <AxesSubplot:title={'center':"Apple's stock price"}, xlabel='Date'>
 
-The Open column is the starting price while the Close column is the
-final price of a stock on a particular trading day. The High and Low
-columns represent the highest and lowest prices for a certain day.
-Feature Scaling From previous experience with deep learning models, we
-know that we have to scale our data for optimal performance. In our
-case, we'll use Scikit- Learn's MinMaxScaler and scale our dataset to
-numbers between zero and one.
+![png](output_files/output_2_1.png)
 
-Building the LSTM
+``` {.python}
+sc = MinMaxScaler(feature_range = (0, 1))
+```
 
-In order to build the LSTM, we need to import a couple of modules from
-Keras: Sequential for initializing the neural network Dense for adding a
-densely connected neural network layer LSTM for adding the Long
-Short-Term Memory layer Dropout for adding dropout layers that prevent
-overfitting
+``` {.python}
+def preproc( data, lag, ratio):
+    data=data.dropna().iloc[:, 0:1]
+    Dates=data.index.unique()
+    data.iloc[:, 0] = sc.fit_transform(data.iloc[:, 0].values.reshape(-1, 1))
+    for s in range(1, lag):
+        data['shift_{}'.format(s)] = data.iloc[:, 0].shift(s)
+    X_data = data.dropna().drop(['Open'], axis=1)
+    y_data = data.dropna()[['Open']]
+    index=int(round(len(X_data)*ratio))
+    X_data_train=X_data.iloc[:index,:]
+    X_data_test =X_data.iloc[index+1:,:]
+    y_data_train=y_data.iloc[:index,:]
+    y_data_test =y_data.iloc[index+1:,:]
+    return X_data_train,X_data_test,y_data_train,y_data_test,Dates;
+```
 
-We add the LSTM layer and later add a few Dropout layers to prevent
-overfitting. We add the LSTM layer with the following arguments:
+``` {.python}
+a,b,c,d,e=preproc(appl_df, 25, 0.90)
+```
 
-50 units which is the dimensionality of the output space
-return_sequences=True which determines whether to return the last output
-in the output sequence, or the full sequence input_shape as the shape of
-our training set. When defining the Dropout layers, we specify 0.2,
-meaning that 20% of the layers will be dropped. Thereafter, we add the
-Dense layer that specifies the output of 1 unit. After this, we compile
-our model using the popular adam optimizer and set the loss as the
-mean_squarred_error. This will compute the mean of the squared errors.
-Next, we fit the model to run on 100 epochs with a batch size of 32.
-Keep in mind that, depending on the specs of your computer, this might
-take a few minutes to finish running.
+``` {.python}
+a.shape
+```
 
-Predicting Future Stock using the Test Set
+    (430, 24)
 
-First we need to import the test set that we'll use to make our
-predictions on.
+``` {.python}
+spy_df = yf.download('SPY', 
+                      start='2018-01-01', 
+                      end='2019-12-31', 
+                      progress=False)
+spy_df.head()
+```
 
-In order to predict future stock prices we need to do a couple of things
-after loading in the test set: 1. Merge the training set and the test
-set on the 0 axis. 2. Set the time step as 60 (as seen previously) 3.
-Use MinMaxScaler to transform the new dataset 4. Reshape the dataset as
-done previously After making the predictions we use inverse_transform to
-get back the stock prices in normal readable format.
+<div>
 
-Plotting the Results
+```{=html}
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-Finally, we use Matplotlib to visualize the result of the predicted
-stock price and the real stock price.
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-From the plot we can see that the real stock price went up while our
-model also predicted that the price of the stock will go up. This
-clearly shows how powerful LSTMs are for analyzing time series and
-sequential data.
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+```
+|            | Open       | High       | Low        | Close      | Adj Close  | Volume   |
+|------------|------------|------------|------------|------------|------------|----------|
+| Date       |            |            |            |            |            |          |
+| 2018-01-02 | 267.839996 | 268.809998 | 267.399994 | 268.769989 | 253.283142 | 86655700 |
+| 2018-01-03 | 268.959991 | 270.640015 | 268.959991 | 270.470001 | 254.885162 | 90070400 |
+| 2018-01-04 | 271.200012 | 272.160004 | 270.540009 | 271.609985 | 255.959488 | 80636400 |
+| 2018-01-05 | 272.510010 | 273.559998 | 271.950012 | 273.420013 | 257.665283 | 83524000 |
+| 2018-01-08 | 273.309998 | 274.100006 | 272.980011 | 273.920013 | 258.136414 | 57319200 |
 
-Conclusion
+</div>
 
-There are a couple of other techniques of predicting stock prices such
-as moving averages, linear regression, K-Nearest Neighbours, ARIMA and
-Prophet. These are techniques that one can test on their own and compare
-their performance with the Keras LSTM. If you wish to learn more about
-Keras and deep learning you can find my articles on that here and here.
+``` {.python}
+def preproc2( data1, data2, lag, ratio):
+    common_dates=list(set(data1.index) & set(data2.index))
+    data1=data1[data1.index.isin(common_dates)]
+    data2=data2[data2.index.isin(common_dates)]
+    X1=preproc(data1, lag, ratio)
+    X2=preproc(data2, lag, ratio)
+    return X1,X2;
+```
 
-<https://www.datacamp.com/community/tutorials/lstm-python-stock-market>
+``` {.python}
+dataLSTM=preproc2( spy_df, appl_df, 25, 0.90)
+```
 
-Splitting Data into a Training set and a Test set
+``` {.python}
+dataLSTM[0][2]
+```
 
-You will use the mid price calculated by taking the average of the
-highest and lowest recorded prices on a day. Now you can split the
-training data and test data. The training data will be the first 11,000
-data points of the time series and rest will be test data.
+<div>
 
-Normalizing the Data
+```{=html}
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-Now you need to define a scaler to normalize the data. MinMaxScalar
-scales all the data to be in the region of 0 and 1. You can also reshape
-the training and test data to be in the shape [data_size, num_features].
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
 
-Due to the observation you made earlier, that is, different time periods
-of data have different value ranges, you normalize the data by splitting
-the full series into windows. If you don't do this, the earlier data
-will be close to 0 and will not add much value to the learning process.
-Here you choose a window size of 2500. Tip: when choosing the window
-size make sure it's not too small, because when you perform
-windowed-normalization, it can introduce a break at the very end of each
-window, as each window is normalized independently. In this example, 4
-data points will be affected by this. But given you have 11,000 data
-points, 4 points will not cause any issue
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+```
+|            | Open     |
+|------------|----------|
+| Date       |          |
+| 2018-02-06 | 0.273100 |
+| 2018-02-07 | 0.370628 |
+| 2018-02-08 | 0.365045 |
+| 2018-02-09 | 0.282898 |
+| 2018-02-12 | 0.317420 |
+| ...        | ...      |
+| 2019-10-15 | 0.696480 |
+| 2019-10-16 | 0.710949 |
+| 2019-10-17 | 0.725874 |
+| 2019-10-18 | 0.714595 |
+| 2019-10-21 | 0.722912 |
+
+<p>
+
+430 rows × 1 columns
+
+</p>
+
+</div>
+
+``` {.python}
+dataLSTM[1][2]
+```
+
+<div>
+
+```{=html}
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+```
+|            | Open     |
+|------------|----------|
+| Date       |          |
+| 2018-02-06 | 0.073739 |
+| 2018-02-07 | 0.129876 |
+| 2018-02-08 | 0.110847 |
+| 2018-02-09 | 0.088963 |
+| 2018-02-12 | 0.098682 |
+| ...        | ...      |
+| 2019-10-15 | 0.628041 |
+| 2019-10-16 | 0.607517 |
+| 2019-10-17 | 0.619206 |
+| 2019-10-18 | 0.615808 |
+| 2019-10-21 | 0.635721 |
+
+<p>
+
+430 rows × 1 columns
+
+</p>
+
+</div>
+
+``` {.python}
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+import keras.backend as K
+from keras.callbacks import EarlyStopping
+```
+
+``` {.python}
+a = a.values
+b= b.values
+
+c = c.values
+d = d.values
+```
+
+``` {.python}
+X_train_t = a.reshape(a.shape[0], 1, 24)
+X_test_t = b.reshape(b.shape[0], 1, 24)
+```
+
+``` {.python}
+X_test_t.shape
+```
+
+    (47, 1, 24)
+
+``` {.python}
+K.clear_session()
+early_stop = EarlyStopping(monitor='loss', patience=1, verbose=1)
+model = Sequential()
+model.add(LSTM(12, input_shape=(1, 24), return_sequences=True))
+model.add(LSTM(6))
+model.add(Dense(6))
+model.add(Dense(1))
+model.compile(loss='mean_squared_error', optimizer='adam')
+```
+
+``` {.python}
+model.fit(X_train_t, c,
+          epochs=100, batch_size=1, verbose=1,
+          callbacks=[early_stop])
+```
+
+    Epoch 1/100
+    430/430 [==============================] - 2s 1ms/step - loss: 0.0260
+    Epoch 2/100
+    430/430 [==============================] - 0s 1ms/step - loss: 0.0022
+    Epoch 3/100
+    430/430 [==============================] - 0s 1ms/step - loss: 0.0013
+    Epoch 4/100
+    430/430 [==============================] - 0s 1ms/step - loss: 0.0013
+    Epoch 5/100
+    430/430 [==============================] - 0s 1ms/step - loss: 0.0011
+    Epoch 6/100
+    430/430 [==============================] - 0s 1ms/step - loss: 0.0013
+    Epoch 7/100
+    430/430 [==============================] - 0s 1ms/step - loss: 0.0010
+    Epoch 8/100
+    430/430 [==============================] - 0s 1ms/step - loss: 9.7133e-04
+    Epoch 00008: early stopping
+
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x7fdd805fdf10>
+
+``` {.python}
+ypredr=[]
+st=X_test_t[0].reshape(1, 1, 24)
+tmp=st
+ptmp=st
+val=model.predict(st)
+ypredr.append(val.tolist()[0])
+for i in range(1, X_test_t.shape[0]):
+    tmp=np.append(val, tmp[0,0, 0:-1])
+    tmp=tmp.reshape(1, 1, 24)
+    ptmp=np.vstack((ptmp,tmp))
+    val=model.predict(tmp)
+    ypredr.append(val.tolist()[0])
+```
+
+``` {.python}
+plt.plot(ypredr,color="green", label = "Rolling prediction")
+plt.legend()
+plt.show()
+```
+
+![png](output_files/output_19_0.png)
+
+``` {.python}
+y_pred = model.predict(X_test_t)
+plt.plot(d, label = "Real data")
+plt.plot(y_pred, label = "One point prediction")
+plt.plot(ypredr, label = "Rolling prediction")
+plt.legend()
+plt.show()
+```
+
+![png](output_files/output_20_0.png)
+
+``` {.python}
+Aa = dataLSTM[0][0].values
+Ab = dataLSTM[0][1].values
+
+Ac = dataLSTM[0][2].values
+Ad = dataLSTM[0][3].values
+X_train_A = Aa.reshape(Aa.shape[0], 1, 24)
+X_test_A = Ab.reshape(Ab.shape[0], 1, 24)
+```
+
+``` {.python}
+Sa = dataLSTM[1][0].values
+Sb = dataLSTM[1][1].values
+
+Sc = dataLSTM[1][2].values
+Sd = dataLSTM[1][3].values
+X_train_S = Sa.reshape(Sa.shape[0], 1, 24)
+X_test_S = Sb.reshape(Sb.shape[0], 1, 24)
+```
+
+``` {.python}
+from keras.layers import concatenate
+from keras.layers import Dropout
+from keras.models import Sequential
+from keras.layers import Dense
+import keras.backend as K
+from keras.callbacks import EarlyStopping
+from keras.layers import LSTM
+from keras.models import Input, Model
+from keras.layers import Dense
+```
+
+``` {.python}
+early_stop = EarlyStopping(monitor='loss', patience=1, verbose=1)
+input1 = Input(shape=(1,24)) # for the three columns of dat_train
+x1 = LSTM(6)(input1)
+
+input2 = Input(shape=(1,24))
+x2 = LSTM(6)(input2)
+
+con = concatenate(inputs = [x1,x2] ) # merge in metadata
+x3 = Dense(50)(con)
+x3 = Dropout(0.3)(x3)
+output = Dense(1, activation='sigmoid')(x3)
+n_net = Model(inputs=[input1, input2], outputs=output)
+n_net.compile(loss='mean_squared_error', optimizer='adam')
+```
+
+``` {.python}
+n_net.fit(x=[X_train_A, X_train_S], y=Ac, epochs=10, batch_size=1, verbose=1,
+          callbacks=[early_stop])
+```
+
+    Epoch 1/10
+    430/430 [==============================] - 2s 836us/step - loss: 0.0168
+    Epoch 2/10
+    430/430 [==============================] - 0s 799us/step - loss: 0.0058
+    Epoch 3/10
+    430/430 [==============================] - 0s 793us/step - loss: 0.0038
+    Epoch 4/10
+    430/430 [==============================] - 0s 800us/step - loss: 0.0029
+    Epoch 5/10
+    430/430 [==============================] - 0s 795us/step - loss: 0.0030
+    Epoch 6/10
+    430/430 [==============================] - 0s 798us/step - loss: 0.0026
+    Epoch 7/10
+    430/430 [==============================] - 0s 796us/step - loss: 0.0022
+    Epoch 8/10
+    430/430 [==============================] - 0s 800us/step - loss: 0.0021
+    Epoch 9/10
+    430/430 [==============================] - 0s 796us/step - loss: 0.0021
+    Epoch 00009: early stopping
+
+
+
+
+
+    <tensorflow.python.keras.callbacks.History at 0x7fddb3d0f850>
+
+``` {.python}
+y_pred = n_net.predict([X_test_A,X_test_S])
+plt.plot(Ad, label = "Real data")
+plt.plot(y_pred, label = "One point prediction")
+plt.legend()
+plt.show()
+```
+
+![png](output_files/output_26_0.png)
+
+``` {.python}
+ypredr=[]
+st=X_test_A[0].reshape(1, 1, 24)
+sst=X_test_S[0].reshape(1, 1, 24)
+tmp=st
+ptmp=st
+val=n_net.predict([tmp,sst])
+ypredr.append(val.tolist()[0])
+for i in range(1, X_test_t.shape[0]):
+    tmp=np.append(val, tmp[0,0, 0:-1])
+    tmp=tmp.reshape(1, 1, 24)
+    sst=X_test_S[i].reshape(1, 1, 24)
+    ptmp=np.vstack((ptmp,tmp))
+    val=n_net.predict([tmp,sst])
+    ypredr.append(val.tolist()[0])
+```
+
+``` {.python}
+plt.plot(ypredr, color="green", label = "Rolling prediction")
+plt.legend()
+plt.show()
+```
+
+![png](output_files/output_28_0.png)
+
+``` {.python}
+y_pred = n_net.predict([X_test_A,X_test_S])
+plt.plot(Ad, label = "Real data")
+plt.plot(y_pred, label = "One point prediction")
+plt.plot(ypredr, label = "Rolling prediction")
+plt.legend()
+plt.show()
+```
+
+![png](output_files/output_29_0.png)
+
+``` {.python}
+```
