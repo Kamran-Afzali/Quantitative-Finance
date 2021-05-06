@@ -66,12 +66,6 @@ a,b,c,d,e=preproc(appl_df, 25, 0.90)
 ```
 
 ``` {.python}
-a.shape
-```
-
-    (430, 24)
-
-``` {.python}
 spy_df = yf.download('SPY', 
                       start='2018-01-01', 
                       end='2019-12-31', 
@@ -79,23 +73,6 @@ spy_df = yf.download('SPY',
 spy_df.head()
 ```
 
-<div>
-
-```{=html}
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-```
 |            | Open       | High       | Low        | Close      | Adj Close  | Volume   |
 |------------|------------|------------|------------|------------|------------|----------|
 | Date       |            |            |            |            |            |          |
@@ -105,7 +82,6 @@ spy_df.head()
 | 2018-01-05 | 272.510010 | 273.559998 | 271.950012 | 273.420013 | 257.665283 | 83524000 |
 | 2018-01-08 | 273.309998 | 274.100006 | 272.980011 | 273.920013 | 258.136414 | 57319200 |
 
-</div>
 
 ``` {.python}
 def preproc2( data1, data2, lag, ratio):
@@ -120,94 +96,6 @@ def preproc2( data1, data2, lag, ratio):
 ``` {.python}
 dataLSTM=preproc2( spy_df, appl_df, 25, 0.90)
 ```
-
-``` {.python}
-dataLSTM[0][2]
-```
-
-<div>
-
-```{=html}
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-```
-|            | Open     |
-|------------|----------|
-| Date       |          |
-| 2018-02-06 | 0.273100 |
-| 2018-02-07 | 0.370628 |
-| 2018-02-08 | 0.365045 |
-| 2018-02-09 | 0.282898 |
-| 2018-02-12 | 0.317420 |
-| ...        | ...      |
-| 2019-10-15 | 0.696480 |
-| 2019-10-16 | 0.710949 |
-| 2019-10-17 | 0.725874 |
-| 2019-10-18 | 0.714595 |
-| 2019-10-21 | 0.722912 |
-
-<p>
-
-430 rows × 1 columns
-
-</p>
-
-</div>
-
-``` {.python}
-dataLSTM[1][2]
-```
-
-<div>
-
-```{=html}
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-```
-|            | Open     |
-|------------|----------|
-| Date       |          |
-| 2018-02-06 | 0.073739 |
-| 2018-02-07 | 0.129876 |
-| 2018-02-08 | 0.110847 |
-| 2018-02-09 | 0.088963 |
-| 2018-02-12 | 0.098682 |
-| ...        | ...      |
-| 2019-10-15 | 0.628041 |
-| 2019-10-16 | 0.607517 |
-| 2019-10-17 | 0.619206 |
-| 2019-10-18 | 0.615808 |
-| 2019-10-21 | 0.635721 |
-
-<p>
-
-430 rows × 1 columns
-
-</p>
-
-</div>
 
 ``` {.python}
 from keras.models import Sequential
@@ -229,12 +117,6 @@ d = d.values
 X_train_t = a.reshape(a.shape[0], 1, 24)
 X_test_t = b.reshape(b.shape[0], 1, 24)
 ```
-
-``` {.python}
-X_test_t.shape
-```
-
-    (47, 1, 24)
 
 ``` {.python}
 K.clear_session()
@@ -270,12 +152,6 @@ model.fit(X_train_t, c,
     Epoch 8/100
     430/430 [==============================] - 0s 1ms/step - loss: 9.7133e-04
     Epoch 00008: early stopping
-
-
-
-
-
-    <tensorflow.python.keras.callbacks.History at 0x7fdd805fdf10>
 
 ``` {.python}
 ypredr=[]
@@ -384,12 +260,6 @@ n_net.fit(x=[X_train_A, X_train_S], y=Ac, epochs=10, batch_size=1, verbose=1,
     430/430 [==============================] - 0s 796us/step - loss: 0.0021
     Epoch 00009: early stopping
 
-
-
-
-
-    <tensorflow.python.keras.callbacks.History at 0x7fddb3d0f850>
-
 ``` {.python}
 y_pred = n_net.predict([X_test_A,X_test_S])
 plt.plot(Ad, label = "Real data")
@@ -436,5 +306,4 @@ plt.show()
 
 ![png](output_files/output_29_0.png)
 
-``` {.python}
-```
+

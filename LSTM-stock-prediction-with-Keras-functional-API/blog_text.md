@@ -30,13 +30,18 @@ feedforward neural networks, LSTM has feedback connections. It can not
 only process single data points (e.g. images), but also entire sequences
 of data (such as speech or video inputs). LSTM models are able to store
 information over a period of time. In order words, they have a memory
-capacity. Remember that LSTM stands for Long Short-Term Memory Model.
+capacity. 
+
+Remember that LSTM stands for Long Short-Term Memory Model.
 This characteristic is extremely useful when we deal with Time-Series or
 Sequential Data. When using an LSTM model we are free and able to decide
 what information will be stored and what discarded. We do that using the
 "gates". The deep understanding of the LSTM is outside the scope of this
 post but if you are interested in learning more, have a look at the
-references at the end of this post. 3. Getting the stock price history
+references at the end of this post. 
+
+
+3. Getting the stock price history
 data Thanks to Yahoo finance we can get the data for free. Use the
 following link to get the stock price history of TESLA:   In this
 tutorial, we'll build a Python deep learning model that will predict the
