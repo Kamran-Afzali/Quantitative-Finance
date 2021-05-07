@@ -43,7 +43,8 @@ from yahoofinancials import YahooFinancials
 %matplotlib inline
 ```
 
-The first step is to download the data from Yahoo finance. In the first step we focus on the Apple stock.
+The first step is to download the data from Yahoo finance. In the first
+step we focus on the Apple stock.
 
 ``` {.python}
 appl_df = yf.download('AAPL', 
@@ -62,7 +63,7 @@ appl_df.head()
 | 2018-01-05 | 43.360001 | 43.842499 | 43.262501 | 43.750000 | 42.038452 | 94640000  |
 | 2018-01-08 | 43.587502 | 43.902500 | 43.482498 | 43.587502 | 41.882305 | 82271200  |
 
-
+and to plot it using pandas plotting function.
 
 ``` {.python}
 appl_df['Open'].plot(title="Apple's stock price")
@@ -70,20 +71,20 @@ appl_df['Open'].plot(title="Apple's stock price")
 
 ![png](output_files/output_2_1.png)
 
+Feature Scaling
 
-Feature Scaling 
-
-From previous experience with deep learning models, we
-know that we have to scale our data for optimal performance. In our
-case, we'll use Scikit- Learn's MinMaxScaler and scale our dataset to
-numbers between zero and one.
+From previous experience with deep learning models, we know that we have
+to scale our data for optimal performance. In our case, we'll use
+Scikit- Learn's MinMaxScaler and scale our dataset to numbers between
+zero and one.
 
 ``` {.python}
 sc = MinMaxScaler(feature_range = (0, 1))
 ```
 
-
-
+here we create a univariate pre-processor function that does three steps
+of min max scaling, creating lags, and separating the data to train and
+test sets for a given time-series.
 
 ``` {.python}
 def preproc( data, lag, ratio):
@@ -108,7 +109,8 @@ Then we apply the univariate pre-processing to the Apple data
 a,b,c,d,e=preproc(appl_df, 25, 0.90)
 ```
 
-As a second ticker and an additional varaible to improve our model performance we focus of the SP500 index eft SPY.
+As a second ticker and an additional varaible to improve our model
+performance we focus of the SP500 index eft SPY.
 
 ``` {.python}
 spy_df = yf.download('SPY', 
@@ -127,7 +129,9 @@ spy_df.head()
 | 2018-01-05 | 272.510010 | 273.559998 | 271.950012 | 273.420013 | 257.665283 | 83524000 |
 | 2018-01-08 | 273.309998 | 274.100006 | 272.980011 | 273.920013 | 258.136414 | 57319200 |
 
-
+here we create a multi-variate pre-processor function that does three
+steps of min max scaling, creating lags, and separating the data to
+train and test sets for common dates of two time series.
 
 ``` {.python}
 def preproc2( data1, data2, lag, ratio):
@@ -139,12 +143,14 @@ def preproc2( data1, data2, lag, ratio):
     return X1,X2;
 ```
 
-
-Then we apply the multi-variate pre-processing to the Apple data
+Then we apply the multi-variate pre-processing to both SPY and Apple
+data
 
 ``` {.python}
 dataLSTM=preproc2( spy_df, appl_df, 25, 0.90)
 ```
+
+here we load necessary libraries for the deep learning model
 
 ``` {.python}
 from keras.models import Sequential
@@ -154,6 +160,8 @@ import keras.backend as K
 from keras.callbacks import EarlyStopping
 ```
 
+in order to run the models data should be transformed to numpy arrays
+
 ``` {.python}
 a = a.values
 b= b.values
@@ -162,10 +170,15 @@ c = c.values
 d = d.values
 ```
 
+and properly reshaped for LSTM modeling
+
 ``` {.python}
 X_train_t = a.reshape(a.shape[0], 1, 24)
 X_test_t = b.reshape(b.shape[0], 1, 24)
 ```
+
+here we define a simple Sequential model with two LSTM and two dense
+layers
 
 ``` {.python}
 K.clear_session()
@@ -177,6 +190,8 @@ model.add(Dense(6))
 model.add(Dense(1))
 model.compile(loss='mean_squared_error', optimizer='adam')
 ```
+
+that we train for 100 epochs
 
 ``` {.python}
 model.fit(X_train_t, c,
@@ -202,6 +217,9 @@ model.fit(X_train_t, c,
     430/430 [==============================] - 0s 1ms/step - loss: 9.7133e-04
     Epoch 00008: early stopping
 
+Here we create a rolling forecast function that predicts the values
+based on the previous outcomes of the model.
+
 ``` {.python}
 ypredr=[]
 st=X_test_t[0].reshape(1, 1, 24)
@@ -216,6 +234,11 @@ for i in range(1, X_test_t.shape[0]):
     val=model.predict(tmp)
     ypredr.append(val.tolist()[0])
 ```
+
+the plot here shows the rolling forecast which base each forecast on 24
+data points forecasted beforehand, this should be contrasted to the one
+point forecast function that base each forecast on 24 data points
+observed beforehand.
 
 ``` {.python}
 plt.plot(ypredr,color="green", label = "Rolling prediction")
