@@ -15,17 +15,12 @@ library(forecast)
 #https://lamfo-unb.github.io/2017/07/22/intro-stock-analysis-1/
 #https://github.com/andrew-couch/Tidy-Tuesday/blob/master/TidyTuesdayForecasting.Rmd
 
-spy <- getSymbols("SPY", src = "yahoo", from = "2013-01-01", to = "2019-06-01", auto.assign = FALSE)
+spy <- getSymbols("SPY", src = "yahoo", from = Sys.Date()-365, to = Sys.Date(), auto.assign = FALSE)
 
+Sys.Date()-365
 
-
-spy%>Op()
-spy%>Hi()
-spy%>Lo()
-spy%>Cl()
-spy%>Vo()
-spy%>Ad()
-
+head(spy$SPY.Close)
+head(Lag(spy$SPY.Close))
 chartSeries(spy,
             type="line",
             theme=chartTheme('white'))
@@ -73,9 +68,31 @@ charts.PerformanceSummary(ret1)
 
 RSI(Ad(spy),n=5)
 
-signal2=1*(EMA(Ad(spy),n=10)>EMA(Ad(spy),n=50))
+signal2=1*(EMA(Ad(spy),n=12)>EMA(Ad(spy),n=26))
 trade2 <- Lag(signal2)
 trade2[is.na(trade2)]=0
 ret2 <- dailyReturn(spy)*trade2
 sum(ret2)
 charts.PerformanceSummary(ret2)
+
+signal2=1*(EMA(Ad(spy),n=24)>EMA(Ad(spy),n=52))
+trade2 <- Lag(signal2)
+trade2[is.na(trade2)]=0
+ret2 <- dailyReturn(spy)*trade2
+sum(ret2)
+charts.PerformanceSummary(ret2)
+
+signal3=1*(MACD(Ad(spy), nSig = 18)$signal>0)
+trade3 <- Lag(signal3)
+trade3[is.na(trade3)]=0
+ret3 <- dailyReturn(spy)*trade3
+sum(ret3)
+charts.PerformanceSummary(ret3)
+
+signal_RSI=1*(RSI(Cl(spy))< 30)%>%Lag()%>% replace(is.na(.), 0)
+signal_EMA1=1*(EMA(Cl(spy),n=12)>EMA(Cl(spy),n=26))%>%Lag()%>% replace(is.na(.), 0)
+signal_EMA2=1*(EMA(Cl(spy),n=24)>EMA(Cl(spy),n=52))%>%Lag()%>% replace(is.na(.), 0)
+signal_MACD1=1*(MACD(Cl(spy))$signal>0)%>%Lag()%>% replace(is.na(.), 0)
+signal_MACD2=1*(MACD(Ad(spy), nSig = 18)$signal>0)%>%Lag()%>% replace(is.na(.), 0)
+
+
