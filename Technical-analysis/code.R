@@ -1,9 +1,9 @@
 rm(list=ls())
 
-install.packages("quantmod")
-install.packages("PerformanceAnalytics")
-install.packages("modeldata")
-install.packages("forecast")
+# install.packages("quantmod")
+# install.packages("PerformanceAnalytics")
+# install.packages("modeldata")
+# install.packages("forecast")
 
 library(PerformanceAnalytics)
 library(quantmod)
@@ -118,6 +118,26 @@ sum(ret)
 ret <-  dailyReturn(spy)*(1*!(sell_trd_crt>3))
 sum(ret)
 
+
+
+
+action=c()
+action[1]=0
+for (i in 1:length(sell_trd_crt)) {
+  if (action[i]==0 & buy_trd_crt [i]>sell_trd_crt [i])
+  { action[i]=1 }
+  else if  (action[i]==1 & sell_trd_crt [i]>buy_trd_crt [i])
+  { action[i]=0 }
+  action[i+1]=action[i]
+  }
+action=action[1:length(action)-1]
+sum(action)
+
+actiondf=as.data.frame(cbind(buy_trd_crt,sell_trd_crt,action))
+
+ret <-  dailyReturn(spy)*action
+sum(ret)
+sum(dailyReturn(spy))
 
 sum((trd_crt>0))
 
