@@ -196,7 +196,9 @@ sigtab<- function(tkr){
   Sig_Tab=as.data.frame(Sig_Tab)
   Sig_Tab$stock=tkr
   sig_day=tail(Sig_Tab,1)
-  return(list(tab=Sig_Tab,day=sig_day))
+  sig_day_change=sig_day
+  sig_day_change[,]=c(1*(Sig_Tab[nrow(Sig_Tab),1:ncol(sig_day)-1] - Sig_Tab[nrow(Sig_Tab)-1,1:ncol(sig_day)-1]),tkr)
+  return(list(tab=Sig_Tab,day=sig_day,change=sig_day_change))
 }
 
 
@@ -208,6 +210,14 @@ for (i in 1:length(TKRS)) {
   x=TKRS[[i]]$day
   day_tab=rbind(x,day_tab)
 }
+
+
+change_tab=c()
+for (i in 1:length(TKRS)) {
+  x=TKRS[[i]]$change
+  change_tab=rbind(x,change_tab)
+}
+
 
  url=paste("https://finance.yahoo.com/quote/",day_tab$stock,sep = "")
  urls <- paste0("<a href='",url,"'>",url,"</a>")
