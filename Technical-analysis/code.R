@@ -10,7 +10,7 @@ library(quantmod)
 library(tidyverse)
 library(modeldata)
 library(forecast)
-
+library(finreportr)
 #https://bookdown.org/kochiuyu/Technical-Analysis-with-R/charting-with-indicators.html
 #https://lamfo-unb.github.io/2017/07/22/intro-stock-analysis-1/
 #https://github.com/andrew-couch/Tidy-Tuesday/blob/master/TidyTuesdayForecasting.Rmd
@@ -242,3 +242,13 @@ for (i in 1:length(TKRS)) {
 #   dt, escape = FALSE
 # )
 #```
+
+ 
+ 
+ AAPL <- getFin('AAPL')
+ help("quantmod-defunct")
+ AnnualReports("TSLA")
+ AnnualReports("BABA", foreign = TRUE)
+ CompanyInfo("GOOG")
+
+ 
