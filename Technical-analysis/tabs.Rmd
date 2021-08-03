@@ -1,6 +1,8 @@
 ---
 title: "Daily Report"
-output: html_document
+output: 
+  html_document:
+    df_print: paged
 ---
 
 ```{r, include=FALSE}
@@ -73,7 +75,8 @@ sigtab<- function(tkr){
 
 
 ```{r , include=FALSE}
-tkrs=unique(c("BTI","CLX","TRP.TO","RSI.TO","LSPD.TO","ATE.TO","EDGE.TO","ZEO.TO","ZRE.TO","RCI-B.TO","BTO.TO","ABX.TO","NWH-UN.TO","SJR-B.TO","IHI","XEG.TO","XMA.TO","XIN.TO","XMD.TO","XIT.TO","SU.TO","MFC.TO","TRP.TO","T.TO","BEPC.TO","KL.TO","CGL.TO","SKYY","RNW.TO","PSI","ICLN","ARKK","ETHQ.TO","RSI.TO","LSPD.TO","ATE.TO","LIFE.TO","MCHI","XCH.TO","IHF","ZEO.TO","XGD.TO","ZRE.TO","HACK","RCI-B.TO","BTO.TO","ABX.TO","NWH-UN.TO","XTR.TO","XEG.TO","XMA.TO","XIN.TO","XMD.TO","XIT.TO","BIP-UN.TO","AP-UN.TO","RTH","TAN","PBD","EMQQ","KGRN","VDY.TO","ROBO","BLDP.TO","AC.TO","DGRO","BCE.TO","ATZ.TO","ARRY","ZCH.TO","REI-UN.TO","BB.TO","GNOM","ARKG","VGRO.TO","SCHD","WCN.TO","RBA.TO","VRE.TO","XDSR.TO","BEP-UN.TO","XEQT.TO","XQQ.TO","VFV.TO","CNR.TO","XUH.TO","XUU.TO","PSI","IGV","PSJ","SOXX","IHI","IVW","XST.TO","XUT.TO","CPX.TO","HXS.TO","HXQ.TO","XHC.TO"))
+tkrs=unique(c("BTI","CLX","TRP.TO","RSI.TO","LSPD.TO","ATE.TO","EDGE.TO","ZEO.TO","ZRE.TO","RCI-B.TO","BTO.TO","ABX.TO","NWH-UN.TO","SJR-B.TO","IHI","XEG.TO","XMA.TO","XIN.TO","XMD.TO","XIT.TO","SU.TO","MFC.TO","TRP.TO","T.TO","BEPC.TO","KL.TO","CGL.TO","SKYY","RNW.TO","PSI","ICLN","ARKK","ETHQ.TO","RSI.TO","LSPD.TO","ATE.TO","LIFE.TO","MCHI","XCH.TO","IHF","ZEO.TO","XGD.TO","ZRE.TO","HACK","RCI-B.TO","BTO.TO","ABX.TO","NWH-UN.TO","XTR.TO","XEG.TO","XMA.TO","XIN.TO","XMD.TO","XIT.TO","BIP-UN.TO","AP-UN.TO","RTH","TAN","PBD","EMQQ","KGRN","VDY.TO","ROBO","BLDP.TO","AC.TO","DGRO","BCE.TO","ATZ.TO","ARRY","ZCH.TO","REI-UN.TO","BB.TO","GNOM","ARKG","VGRO.TO","SCHD","WCN.TO","RBA.TO","VRE.TO","XDSR.TO","BEP-UN.TO","XEQT.TO","XQQ.TO","VFV.TO","CNR.TO","XUH.TO","XUU.TO","PSI","IGV","PSJ","SOXX","IHI","IVW","XST.TO","XUT.TO","CPX.TO","HXS.TO","HXQ.TO","XHC.TO","BNS.TO","TD.TO","ENB.TO","CNQ.TO","RY.TO","CSIQ","PLTR","TGT","BMO","C","BTI","ETHQ.TO","RSI.TO","GDNP.V","LSPD.TO","ATE.TO","EDGE.TO","ZEO.TO","ZRE.TO","RCI-B.TO","BTO.TO","ABX.TO","NWH-UN.TO","SJR-B.TO","IHI","XEG.TO","XMA.TO","XIN.TO","XMD.TO","XIT.TO","SU.TO","MFC.TO","TRP.TO","T.TO","BEPC.TO","KL.TO","CGL.TO","SKYY","RNW.TO","PSI","ICLN","HEO.V","ARKK","BNS.TO","TD.TO","ENB.TO","CNQ.TO","RY.TO","CSIQ","PLTR","TGT","BMO","C","BTI","ETHQ.TO","RSI.TO","GDNP.V","LSPD.TO","ATE.TO","IPA.V","LIFE.TO","MCHI","XCH.TO","IHF","ZEO.TO","XGD.TO","ZRE.TO","HACK","RCI-B.TO","BTO.TO","ABX.TO","NWH-UN.TO","XTR.TO","XEG.TO","XMA.TO","XIN.TO","XMD.TO","XIT.TO","BIP-UN.TO","AP-UN.TO","RTH","TAN","PBD","EMQQ","KGRN","VDY.TO","ROBO","BLDP.TO","AC.TO","DGRO","BCE.TO","ATZ.TO","ARRY","ZCH.TO","REI-UN.TO","BB.TO","GNOM","ARKG","VGRO.TO","SCHD","WCN.TO","RBA.TO","VRE.TO","XDSR.TO","BEP-UN.TO","XEQT.TO","XQQ.TO","VFV.TO","CNR.TO","XUH.TO","XUU.TO","PSI","IGV","PSJ","SOXX","IHI","IVW","XST.TO","XUT.TO","CPX.TO","HXS.TO","HXQ.TO","XHC.TO")
+)
 
 TKRS=map(tkrs,sigtab)
 day_tab=c()
@@ -98,7 +101,7 @@ for (i in 1:length(TKRS)) {
 day_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_B),desc(weeklyreturn))%>%
-  head(10)%>%
+  head(20)%>%
    kable("html", escape = FALSE) %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
@@ -109,7 +112,7 @@ day_tab %>%
 day_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_S),weeklyreturn)%>%
-  head(10)%>%
+  head(20)%>%
    kable("html", escape = FALSE) %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
@@ -120,18 +123,18 @@ day_tab %>%
 change_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_B),desc(weeklyreturn))%>%
-  head(10)%>%
+  head(20)%>%
    kable("html", escape = FALSE) %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
-# change_tab change
+# Sell change
 
 ```{r, echo=FALSE}
 change_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_S),weeklyreturn)%>%
-  head(10)%>%
+  head(20)%>%
    kable("html", escape = FALSE) %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
