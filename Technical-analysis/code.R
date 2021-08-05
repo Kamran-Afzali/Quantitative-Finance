@@ -91,7 +91,7 @@ charts.PerformanceSummary(ret3)
 
 summary(MACD(Cl(spy), nSig = 9)$signal)
 ###############################################################################################
-spy <- getSymbols("IHI", src = "yahoo", from = "2012-07-19", to = "2019-07-19", auto.assign = FALSE)
+spy <- getSymbols("spy", src = "yahoo", from = "2012-07-19", to = "2019-07-19", auto.assign = FALSE)
 buy_trd_crt=(1*(RSI(Cl(spy))< 30)%>%Lag()%>% replace(is.na(.), 0)+
     1*(EMA(Cl(spy),n=12)>EMA(Cl(spy),n=26))%>%Lag()%>% replace(is.na(.), 0)+
     1*(EMA(Cl(spy),n=24)>EMA(Cl(spy),n=52))%>%Lag()%>% replace(is.na(.), 0)+
@@ -105,7 +105,10 @@ sell_trd_crt=( 1*(RSI(Cl(spy))> 70)%>%Lag()%>% replace(is.na(.), 0)+
                1*(MACD(Cl(spy), nSig = 18)$signal<0)%>%Lag()%>% replace(is.na(.), 0))
 table(sell_trd_crt)
 
-
+1*(BBands(Cl(spy))$pctB<0)%>%Lag()%>% replace(is.na(.), 0)
+1*(BBands(Cl(spy))$pctB>1)%>%Lag()%>% replace(is.na(.), 0)
+volatility(spy,  mean0=TRUE)%>%Lag()%>% replace(is.na(.), 0)
+ADX(spy)$ADX%>%Lag()%>% replace(is.na(.), 0)
 sum(dailyReturn(spy))
 length(dailyReturn(spy))
 
@@ -153,46 +156,61 @@ sigtab<- function(tkr){
   signal_EMA2_B =1*(EMA(Cl(spy),n=24)>EMA(Cl(spy),n=52))%>%Lag()%>% replace(is.na(.), 0)
   signal_MACD1_B=1*(MACD(Cl(spy))$signal>0.3)%>%Lag()%>% replace(is.na(.), 0)
   signal_MACD2_B=1*(MACD(Cl(spy), nSig = 18)$signal>0.3)%>%Lag()%>% replace(is.na(.), 0)
-  signal_B      =signal_RSI_B+signal_EMA1_B+signal_EMA2_B+signal_MACD1_B+signal_MACD2_B
+  signal_BB_B=1*(BBands(Cl(spy))$pctB<0)%>%Lag()%>% replace(is.na(.), 0)
+  signal_B      =signal_RSI_B+signal_EMA1_B+signal_EMA2_B+signal_MACD1_B+signal_MACD2_B+signal_BB_B
   signal_RSI_S  =1*(RSI(Cl(spy))> 70)%>%Lag()%>% replace(is.na(.), 0)
   signal_EMA1_S =1*(EMA(Cl(spy),n=12)<EMA(Cl(spy),n=26))%>%Lag()%>% replace(is.na(.), 0)
   signal_EMA2_S =1*(EMA(Cl(spy),n=24)<EMA(Cl(spy),n=52))%>%Lag()%>% replace(is.na(.), 0)
   signal_MACD1_S=1*(MACD(Cl(spy))$signal<0)%>%Lag()%>% replace(is.na(.), 0)
   signal_MACD2_S=1*(MACD(Cl(spy), nSig = 18)$signal<0)%>%Lag()%>% replace(is.na(.), 0)
-  signal_S      =signal_RSI_S+signal_EMA1_S+signal_EMA2_S+signal_MACD1_S+signal_MACD2_S
+  signal_BB_S=1*(BBands(Cl(spy))$pctB>1)%>%Lag()%>% replace(is.na(.), 0)
+  
+  signal_S      =signal_RSI_S+signal_EMA1_S+signal_EMA2_S+signal_MACD1_S+signal_MACD2_S+signal_BB_S
+  
   dailyreturn   =(dailyReturn(spy)%>%Lag()%>% replace(is.na(.), 0))*100
   weeklyreturn  =(SMA(dailyReturn(spy),n=5)%>%Lag()%>% replace(is.na(.), 0))*100
+
+  volatility=volatility(spy,  mean0=TRUE)%>%Lag()%>% replace(is.na(.), 0)
+  ADX=ADX(spy)$ADX%>%Lag()%>% replace(is.na(.), 0)
   
   
-  Sig_Tab=cbind(signal_RSI_B  
+  Sig_Tab=cbind( signal_RSI_B  
                 ,signal_EMA1_B 
                 ,signal_EMA2_B 
                 ,signal_MACD1_B
                 ,signal_MACD2_B
+                ,signal_BB_B
                 ,signal_B      
                 ,signal_RSI_S  
                 ,signal_EMA1_S 
                 ,signal_EMA2_S 
                 ,signal_MACD1_S
                 ,signal_MACD2_S
+                ,signal_BB_S
                 ,signal_S      
                 ,dailyreturn   
-                ,weeklyreturn)
+                ,weeklyreturn
+                ,volatility
+                ,ADX)
   
   colnames(Sig_Tab)=cbind( "signal_RSI_B"
                            ,"signal_EMA1_B" 
                            ,"signal_EMA2_B" 
                            ,"signal_MACD1_B"
                            ,"signal_MACD2_B"
+                           ,"signal_BB_B"
                            ,"signal_B"      
                            ,"signal_RSI_S"  
                            ,"signal_EMA1_S" 
                            ,"signal_EMA2_S" 
                            ,"signal_MACD1_S"
                            ,"signal_MACD2_S"
+                           ,"signal_BB_S"
                            ,"signal_S"      
                            ,"dailyreturn"   
-                           ,"weeklyreturn")
+                           ,"weeklyreturn"
+                           ,"Vol"
+                           ,"ADX")
   Sig_Tab=as.data.frame(Sig_Tab)
   Sig_Tab$stock=tkr
   sig_day=tail(Sig_Tab,1)
