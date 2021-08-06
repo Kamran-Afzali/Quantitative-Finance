@@ -15,6 +15,9 @@ library(finreportr)
 #https://lamfo-unb.github.io/2017/07/22/intro-stock-analysis-1/
 #https://github.com/andrew-couch/Tidy-Tuesday/blob/master/TidyTuesdayForecasting.Rmd
 #https://github.com/andrew-couch/Tidy-Tuesday/blob/master/Season%202/Scripts/TidyTuesdayAutoplot.Rmd
+#https://business-science.github.io/timetk/reference/tk_augment_lags.html
+#https://business-science.github.io/timetk/reference/tk_augment_timeseries.html
+#https://business-science.github.io/timetk/articles/TK03_Forecasting_Using_Time_Series_Signature.html
 
 spy <- getSymbols("SPY", src = "yahoo", from = Sys.Date()-365, to = Sys.Date(), auto.assign = FALSE)
 
