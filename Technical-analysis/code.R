@@ -14,6 +14,7 @@ library(finreportr)
 #https://bookdown.org/kochiuyu/Technical-Analysis-with-R/charting-with-indicators.html
 #https://lamfo-unb.github.io/2017/07/22/intro-stock-analysis-1/
 #https://github.com/andrew-couch/Tidy-Tuesday/blob/master/TidyTuesdayForecasting.Rmd
+#https://github.com/andrew-couch/Tidy-Tuesday/blob/master/Season%202/Scripts/TidyTuesdayAutoplot.Rmd
 
 spy <- getSymbols("SPY", src = "yahoo", from = Sys.Date()-365, to = Sys.Date(), auto.assign = FALSE)
 
@@ -269,4 +270,163 @@ for (i in 1:length(TKRS)) {
  AnnualReports("BABA", foreign = TRUE)
  CompanyInfo("GOOG")
 
+ ################################################################################################
+ library(tidymodels)
+ library(stacks)
+ library(finetune)
+ library(vip)
+ library(tidyposterior)
+ library(modeldata)
+ library(workflowsets)
  
+ 
+ spy <- getSymbols("spy", src = "yahoo", from = Sys.Date()-1000, to = Sys.Date(), auto.assign = FALSE)
+ signal_RSI_B  =1*(RSI(Cl(spy))< 30)%>%Lag()%>% replace(is.na(.), 0)
+ signal_EMA1_B =1*(EMA(Cl(spy),n=12)>EMA(Cl(spy),n=26))%>%Lag()%>% replace(is.na(.), 0)
+ signal_EMA2_B =1*(EMA(Cl(spy),n=24)>EMA(Cl(spy),n=52))%>%Lag()%>% replace(is.na(.), 0)
+ signal_MACD1_B=1*(MACD(Cl(spy))$signal>0.3)%>%Lag()%>% replace(is.na(.), 0)
+ signal_MACD2_B=1*(MACD(Cl(spy), nSig = 18)$signal>0.3)%>%Lag()%>% replace(is.na(.), 0)
+ signal_BB_B=1*(BBands(Cl(spy))$pctB<0)%>%Lag()%>% replace(is.na(.), 0)
+ signal_B      =signal_RSI_B+signal_EMA1_B+signal_EMA2_B+signal_MACD1_B+signal_MACD2_B+signal_BB_B
+ signal_RSI_S  =1*(RSI(Cl(spy))> 70)%>%Lag()%>% replace(is.na(.), 0)
+ signal_EMA1_S =1*(EMA(Cl(spy),n=12)<EMA(Cl(spy),n=26))%>%Lag()%>% replace(is.na(.), 0)
+ signal_EMA2_S =1*(EMA(Cl(spy),n=24)<EMA(Cl(spy),n=52))%>%Lag()%>% replace(is.na(.), 0)
+ signal_MACD1_S=1*(MACD(Cl(spy))$signal<0)%>%Lag()%>% replace(is.na(.), 0)
+ signal_MACD2_S=1*(MACD(Cl(spy), nSig = 18)$signal<0)%>%Lag()%>% replace(is.na(.), 0)
+ signal_BB_S=1*(BBands(Cl(spy))$pctB>1)%>%Lag()%>% replace(is.na(.), 0)
+ signal_S      =signal_RSI_S+signal_EMA1_S+signal_EMA2_S+signal_MACD1_S+signal_MACD2_S+signal_BB_S
+ dailyreturn   =(dailyReturn(spy)%>%Lag()%>% replace(is.na(.), 0))*100
+ weeklyreturn  =(SMA(dailyReturn(spy),n=5)%>%Lag()%>% replace(is.na(.), 0))*100
+ volatility=volatility(spy,  mean0=TRUE)%>%Lag()%>% replace(is.na(.), 0)
+ ADX=ADX(spy)$ADX%>%Lag()%>% replace(is.na(.), 0)
+ 
+ spy <- getSymbols("spy", src = "yahoo", from = Sys.Date()-1000, to = Sys.Date(), auto.assign = FALSE)
+ esd=dailyReturn(spy)
+ spy=spy[-c(which(esd>mean(esd)+(2*sd(esd))|esd<mean(esd)-(2*sd(esd)))),]
+ data=as.data.frame(cbind(
+ (1*(RSI(Cl(spy))< 30)),
+ 1*(EMA(Cl(spy),n=12)>EMA(Cl(spy),n=26)),
+ 1*(EMA(Cl(spy),n=24)>EMA(Cl(spy),n=52)),
+ 1*(MACD(Cl(spy))$signal>0.3),
+ 1*(MACD(Cl(spy), nSig = 18)$signal>0.3),
+ 1*(BBands(Cl(spy))$pctB<0),
+ 1*(RSI(Cl(spy))> 70),
+ 1*(EMA(Cl(spy),n=12)<EMA(Cl(spy),n=26)),
+ 1*(EMA(Cl(spy),n=24)<EMA(Cl(spy),n=52)),
+ 1*(MACD(Cl(spy))$signal<0),
+ 1*(MACD(Cl(spy), nSig = 18)$signal<0),
+ 1*(BBands(Cl(spy))$pctB>1),
+ RSI(Cl(spy)),
+ MACD(Cl(spy))$signal,
+ MACD(Cl(spy), nSig = 18)$signal,
+ BBands(Cl(spy))$pctB,
+ volatility(spy,  mean0=TRUE),
+ ADX(spy)$DIp,
+ ADX(spy)$DIn,
+ ADX(spy)$ADX,
+ SMA(dailyReturn(spy),n=5)>mean(SMA(dailyReturn(spy),n=5),na.rm=T)+(0.5*sd(SMA(dailyReturn(spy),n=5),na.rm=T))))
+
+ 
+ colnames(data)=c("signal_RSI_B","signal_EMA1_B","signal_EMA2_B","signal_MACD1_B","signal_MACD2_B","signal_BB_B","signal_RSI_S","signal_EMA1_S","signal_EMA2_S","signal_MACD1_S","signal_MACD2_S","signal_BB_S","RSI","MACD1","MACD2","BB","volatility","ADX1","ADX2","ADX3","signal_weeklyreturn")  
+ 
+ data= data%>%
+   mutate(sell=signal_RSI_S+signal_EMA1_S+signal_EMA2_S+signal_MACD1_S+signal_MACD2_S+signal_BB_S,
+               Buy=signal_RSI_B+signal_EMA1_B+signal_EMA2_B+signal_MACD1_B+signal_MACD2_B+signal_BB_B)%>%drop_na()
+ 
+ #Lag
+ 
+ data.t=tail(data,10)
+ data=data%>%Lag(5)
+ #%>%mutate_at(vars(starts_with("signal_")), funs(as.factor))
+ data$signal_weeklyreturn=as.factor( data$signal_weeklyreturn)
+ set.seed(1)
+ class_split <- initial_split(data, strata = "signal_weeklyreturn")
+ class_train <- training(class_split)
+ test_data <- testing(class_split)
+ class_k_folds <- vfold_cv(class_train)
+ 
+
+ 
+
+ 
+ class_rec <- recipe(signal_weeklyreturn~., data = class_train) %>%
+   step_center(all_numeric_predictors())  %>%
+   step_scale(all_numeric_predictors()) %>%
+   #step_corr(all_numeric_predictors()) %>% 
+   #step_lincomb(all_numeric_predictors()) %>% 
+   themis::step_smote (signal_weeklyreturn)
+ 
+ train_preped <- prep(class_rec) %>%
+   bake(new_data = NULL)
+ 
+ test_preped <-  prep(class_rec) %>%
+   bake(new_data = test_data)
+ 
+ elastic_class <- logistic_reg(mixture = tune(), penalty = tune()) %>% 
+   set_mode("classification") %>% 
+   set_engine("glmnet")
+ xgboost_class <- boost_tree(learn_rate = tune(), trees = tune()) %>% 
+   set_mode("classification") %>% 
+   set_engine("xgboost")
+ randomForest_class <- rand_forest(trees = tune()) %>% 
+   set_mode("classification") %>% 
+   set_engine("ranger")
+ 
+
+ classification_metrics <- metric_set(roc_auc)
+ model_control <- control_stack_grid()
+
+ classification_set <- workflow_set(
+   preproc = list(regular = class_rec),
+   models = list(elastic = elastic_class, xgboost = xgboost_class, randomForest = randomForest_class),
+   cross = TRUE )
+
+ 
+ classification_set <- classification_set %>% 
+   workflow_map("tune_sim_anneal", resamples = class_k_folds, metrics = classification_metrics)
+ autoplot(classification_set)
+
+ 
+ autoplot(classification_set, rank_metric = "roc_auc", id = "regular_elastic")
+ rank_results(classification_set, rank_metric = "roc_auc") %>% 
+   filter(.metric == "roc_auc")
+ classification_set %>% 
+   extract_workflow_set_result("regular_elastic") %>% 
+   show_best("roc_auc", n = 1)
+ classification_set %>% 
+   extract_workflow_set_result("regular_randomForest") %>% 
+   show_best("roc_auc", n = 1)
+ 
+ 
+ xgb_best=classification_set %>% 
+   extract_workflow_set_result("regular_xgboost") %>% 
+   show_best("roc_auc", n = 1)
+
+ 
+ 
+ final_xgb <- finalize_model(
+   xgboost_class,
+   xgb_best
+ )
+ 
+ final_xgb
+ 
+ final_xgb %>%
+   set_mode("classification") %>% 
+   set_engine("xgboost")%>%
+   fit(signal_weeklyreturn ~ .,
+       data = train_preped
+   ) %>%
+   vip()
+ 
+ mod_pred=final_xgb %>%
+   set_mode("classification") %>% 
+   set_engine("xgboost")%>%
+   fit(signal_weeklyreturn ~ .,
+       data = train_preped
+   ) %>% predict(test_preped)%>% 
+   bind_cols(test_preped %>% select(signal_weeklyreturn))
+ 
+mod_pred%>% yardstick::accuracy(truth = signal_weeklyreturn, .pred_class)%>%bind_rows(mod_pred%>% yardstick::sens(truth = signal_weeklyreturn, .pred_class))%>%
+   bind_rows(mod_pred%>% yardstick::spec(truth = signal_weeklyreturn, .pred_class))%>%bind_rows(mod_pred%>% yardstick::f_meas(truth = signal_weeklyreturn, .pred_class))
+  

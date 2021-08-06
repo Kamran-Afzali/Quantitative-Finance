@@ -19,27 +19,27 @@ library(forecast)
 
 sigtab<- function(tkr){
   spy <- getSymbols(tkr, src = "yahoo", from = Sys.Date()-100, to = Sys.Date(), auto.assign = FALSE)
-  signal_RSI_B  =1*(RSI(Cl(spy))< 30)%>%Lag()%>% replace(is.na(.), 0)
-  signal_EMA1_B =1*(EMA(Cl(spy),n=12)>EMA(Cl(spy),n=26))%>%Lag()%>% replace(is.na(.), 0)
-  signal_EMA2_B =1*(EMA(Cl(spy),n=24)>EMA(Cl(spy),n=52))%>%Lag()%>% replace(is.na(.), 0)
-  signal_MACD1_B=1*(MACD(Cl(spy))$signal>0.3)%>%Lag()%>% replace(is.na(.), 0)
-  signal_MACD2_B=1*(MACD(Cl(spy), nSig = 18)$signal>0.3)%>%Lag()%>% replace(is.na(.), 0)
-  signal_BB_B=1*(BBands(Cl(spy))$pctB<0)%>%Lag()%>% replace(is.na(.), 0)
+  signal_RSI_B  =1*(RSI(Cl(spy))< 30)%>% replace(is.na(.), 0)
+  signal_EMA1_B =1*(EMA(Cl(spy),n=12)>EMA(Cl(spy),n=26))%>% replace(is.na(.), 0)
+  signal_EMA2_B =1*(EMA(Cl(spy),n=24)>EMA(Cl(spy),n=52))%>% replace(is.na(.), 0)
+  signal_MACD1_B=1*(MACD(Cl(spy))$signal>0.3)%>% replace(is.na(.), 0)
+  signal_MACD2_B=1*(MACD(Cl(spy), nSig = 18)$signal>0.3)%>% replace(is.na(.), 0)
+  signal_BB_B=1*(BBands(Cl(spy))$pctB<0)%>% replace(is.na(.), 0)
   signal_B      =signal_RSI_B+signal_EMA1_B+signal_EMA2_B+signal_MACD1_B+signal_MACD2_B+signal_BB_B
-  signal_RSI_S  =1*(RSI(Cl(spy))> 70)%>%Lag()%>% replace(is.na(.), 0)
-  signal_EMA1_S =1*(EMA(Cl(spy),n=12)<EMA(Cl(spy),n=26))%>%Lag()%>% replace(is.na(.), 0)
-  signal_EMA2_S =1*(EMA(Cl(spy),n=24)<EMA(Cl(spy),n=52))%>%Lag()%>% replace(is.na(.), 0)
-  signal_MACD1_S=1*(MACD(Cl(spy))$signal<0)%>%Lag()%>% replace(is.na(.), 0)
-  signal_MACD2_S=1*(MACD(Cl(spy), nSig = 18)$signal<0)%>%Lag()%>% replace(is.na(.), 0)
-  signal_BB_S=1*(BBands(Cl(spy))$pctB>1)%>%Lag()%>% replace(is.na(.), 0)
+  signal_RSI_S  =1*(RSI(Cl(spy))> 70)%>% replace(is.na(.), 0)
+  signal_EMA1_S =1*(EMA(Cl(spy),n=12)<EMA(Cl(spy),n=26))%>% replace(is.na(.), 0)
+  signal_EMA2_S =1*(EMA(Cl(spy),n=24)<EMA(Cl(spy),n=52))%>% replace(is.na(.), 0)
+  signal_MACD1_S=1*(MACD(Cl(spy))$signal<0)%>% replace(is.na(.), 0)
+  signal_MACD2_S=1*(MACD(Cl(spy), nSig = 18)$signal<0)%>% replace(is.na(.), 0)
+  signal_BB_S=1*(BBands(Cl(spy))$pctB>1)%>% replace(is.na(.), 0)
   
   signal_S      =signal_RSI_S+signal_EMA1_S+signal_EMA2_S+signal_MACD1_S+signal_MACD2_S+signal_BB_S
   
-  dailyreturn   =(dailyReturn(spy)%>%Lag()%>% replace(is.na(.), 0))*100
-  weeklyreturn  =(SMA(dailyReturn(spy),n=5)%>%Lag()%>% replace(is.na(.), 0))*100
+  dailyreturn   =(dailyReturn(spy)%>% replace(is.na(.), 0))*100
+  weeklyreturn  =(SMA(dailyReturn(spy),n=5)%>% replace(is.na(.), 0))*100
 
-  volatility=volatility(spy,  mean0=TRUE)%>%Lag()%>% replace(is.na(.), 0)
-  ADX=ADX(spy)$ADX%>%Lag()%>% replace(is.na(.), 0)
+  volatility=volatility(spy,  mean0=TRUE)%>% replace(is.na(.), 0)
+  ADX=ADX(spy)$ADX%>% replace(is.na(.), 0)
   
   
   Sig_Tab=cbind( signal_RSI_B  
