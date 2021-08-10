@@ -11,6 +11,15 @@ library(tidyverse)
 library(modeldata)
 library(forecast)
 library(finreportr)
+library(tidymodels)
+library(stacks)
+library(finetune)
+library(vip)
+library(tidyposterior)
+library(modeldata)
+library(workflowsets)
+library(timetk)
+#https://juliasilge.com/blog/shelter-animals/
 #https://bookdown.org/kochiuyu/Technical-Analysis-with-R/charting-with-indicators.html
 #https://lamfo-unb.github.io/2017/07/22/intro-stock-analysis-1/
 #https://github.com/andrew-couch/Tidy-Tuesday/blob/master/TidyTuesdayForecasting.Rmd
@@ -279,6 +288,12 @@ for (i in 1:length(TKRS)) {
  CompanyInfo("GOOG")
 
  ################################################################################################
+ library(PerformanceAnalytics)
+ library(quantmod)
+ library(tidyverse)
+ library(modeldata)
+ library(forecast)
+ library(finreportr)
  library(tidymodels)
  library(stacks)
  library(finetune)
@@ -287,6 +302,7 @@ for (i in 1:length(TKRS)) {
  library(modeldata)
  library(workflowsets)
  library(timetk)
+ library(dials)
  
  
  spy <- getSymbols("spy", src = "yahoo", from = Sys.Date()-5000, to = Sys.Date(), auto.assign = FALSE)
@@ -435,3 +451,86 @@ for (i in 1:length(TKRS)) {
 mod_pred%>% yardstick::accuracy(truth = signal_weeklyreturn, .pred_class)%>%bind_rows(mod_pred%>% yardstick::sens(truth = signal_weeklyreturn, .pred_class))%>%
    bind_rows(mod_pred%>% yardstick::spec(truth = signal_weeklyreturn, .pred_class))%>%bind_rows(mod_pred%>% yardstick::f_meas(truth = signal_weeklyreturn, .pred_class))
   
+
+####################################################################
+data$signal_weeklyreturn=as.factor( data$signal_weeklyreturn)
+set.seed(1)
+class_split <- initial_split(data, strata = "signal_weeklyreturn")
+class_train <- training(class_split)
+test_data <- testing(class_split)
+class_k_folds <- vfold_cv(class_train)
+shelter_metrics <- metric_set(accuracy, roc_auc, mn_log_loss)
+
+
+
+
+
+class_rec <- recipe(signal_weeklyreturn~., data = class_train) %>%
+   step_center(all_numeric_predictors())  %>%
+   step_scale(all_numeric_predictors()) %>%
+   #step_corr(all_numeric_predictors()) %>% 
+   #step_lincomb(all_numeric_predictors()) %>% 
+   themis::step_smote (signal_weeklyreturn)
+
+train_preped <- prep(class_rec) %>%
+   bake(new_data = NULL)
+
+test_preped <-  prep(class_rec) %>%
+   bake(new_data = test_data)
+
+stopping_spec <-
+   boost_tree(
+      trees = 500,
+      mtry = tune(),
+      learn_rate = tune()
+   ) %>%
+   set_engine("xgboost", validation = 0.2) %>%
+   set_mode("classification")
+
+stopping_grid <-
+   grid_latin_hypercube(
+      mtry(range = c(5L, 20L)), ## depends on number of columns in data
+      learn_rate(range = c(-5, -1)), ## keep pretty big
+      #stop_iter(range = c(10L, 50L)), ## bigger than default
+      size = 10
+   )
+
+
+early_stop_wf <- workflow(class_rec, stopping_spec)
+
+doParallel::registerDoParallel()
+set.seed(345)
+stopping_rs <- tune_grid(
+   early_stop_wf,
+   class_k_folds,
+   grid = stopping_grid,
+   metrics = shelter_metrics
+)
+
+autoplot(stopping_rs) + theme_light(base_family = "IBMPlexSans")
+
+show_best(stopping_rs, metric = "mn_log_loss")
+
+
+stopping_fit <- early_stop_wf %>%
+   finalize_workflow(select_best(stopping_rs, "mn_log_loss")) %>%
+   last_fit(shelter_split)
+
+stopping_fit
+
+collect_metrics(stopping_fit)
+library(vip)
+
+extract_workflow(stopping_fit) %>%
+   extract_fit_parsnip() %>%
+   vip(num_features = 15, geom = "point")
+
+
+
+
+
+
+
+
+
+
