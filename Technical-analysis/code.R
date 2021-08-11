@@ -1,10 +1,5 @@
 rm(list=ls())
 
-# install.packages("quantmod")
-# install.packages("PerformanceAnalytics")
-# install.packages("modeldata")
-# install.packages("forecast")
-
 library(PerformanceAnalytics)
 library(quantmod)
 library(tidyverse)
@@ -19,6 +14,7 @@ library(tidyposterior)
 library(modeldata)
 library(workflowsets)
 library(timetk)
+#https://juliasilge.com/blog/baseball-racing/
 #https://juliasilge.com/blog/shelter-animals/
 #https://bookdown.org/kochiuyu/Technical-Analysis-with-R/charting-with-indicators.html
 #https://lamfo-unb.github.io/2017/07/22/intro-stock-analysis-1/
@@ -305,7 +301,7 @@ for (i in 1:length(TKRS)) {
  library(dials)
  
  
- spy <- getSymbols("spy", src = "yahoo", from = Sys.Date()-5000, to = Sys.Date(), auto.assign = FALSE)
+ spy <- getSymbols("spy", src = "yahoo", from = Sys.Date()-500, to = Sys.Date(), auto.assign = FALSE)
  esd=dailyReturn(spy)
  spy=spy[-c(which(esd>mean(esd)+(2*sd(esd))|esd<mean(esd)-(2*sd(esd)))),]
  data=list(
@@ -339,7 +335,7 @@ for (i in 1:length(TKRS)) {
  
  lagger=function(x){
    a=names(x)
-   g=tk_augment_lags(as.data.frame(x),a ,.lags = 5:20, .names = "auto")[,-1]
+   g=tk_augment_lags(as.data.frame(x),a ,.lags = 5:7, .names = "auto")[,-1]
    colnames(g)=str_replace(colnames(g), "a_", paste(a,"_",sep=""))
    return(g)
  }
@@ -371,6 +367,7 @@ for (i in 1:length(TKRS)) {
 
  
  class_rec <- recipe(signal_weeklyreturn~., data = class_train) %>%
+   step_zv(all_numeric_predictors()) %>%
    step_center(all_numeric_predictors())  %>%
    step_scale(all_numeric_predictors()) %>%
    #step_corr(all_numeric_predictors()) %>% 
@@ -466,8 +463,9 @@ shelter_metrics <- metric_set(accuracy, roc_auc, mn_log_loss)
 
 
 class_rec <- recipe(signal_weeklyreturn~., data = class_train) %>%
+   step_zv(all_numeric_predictors()) %>%
    step_center(all_numeric_predictors())  %>%
-   step_scale(all_numeric_predictors()) %>%
+   step_scale(all_numeric_predictors())  %>%
    #step_corr(all_numeric_predictors()) %>% 
    #step_lincomb(all_numeric_predictors()) %>% 
    themis::step_smote (signal_weeklyreturn)
@@ -507,23 +505,114 @@ stopping_rs <- tune_grid(
    metrics = shelter_metrics
 )
 
-autoplot(stopping_rs) + theme_light(base_family = "IBMPlexSans")
+autoplot(stopping_rs) 
 
-show_best(stopping_rs, metric = "mn_log_loss")
+show_best(stopping_rs, metric = "mn_log_loss", n = 1)
 
 
-stopping_fit <- early_stop_wf %>%
-   finalize_workflow(select_best(stopping_rs, "mn_log_loss")) %>%
-   last_fit(shelter_split)
 
-stopping_fit
 
-collect_metrics(stopping_fit)
+xgb_best=show_best(stopping_rs, metric = "mn_log_loss", n = 1)
+
+
+
+final_xgb <- finalize_model(
+   stopping_spec,
+   xgb_best
+)
+
+final_xgb
+
+final_xgb %>%
+   set_mode("classification") %>% 
+   set_engine("xgboost")%>%
+   fit(signal_weeklyreturn ~ .,
+       data = train_preped
+   ) %>%
+   vip()
+
+
+mod_pred=final_xgb %>%
+   set_mode("classification") %>% 
+   set_engine("xgboost")%>%
+   fit(signal_weeklyreturn ~ .,
+       data = train_preped
+   ) %>% predict(test_preped)%>% 
+   bind_cols(test_preped %>% select(signal_weeklyreturn))
+
+mod_pred%>% yardstick::accuracy(truth = signal_weeklyreturn, .pred_class)%>%bind_rows(mod_pred%>% yardstick::sens(truth = signal_weeklyreturn, .pred_class))%>%
+   bind_rows(mod_pred%>% yardstick::spec(truth = signal_weeklyreturn, .pred_class))%>%bind_rows(mod_pred%>% yardstick::f_meas(truth = signal_weeklyreturn, .pred_class))
+########################################################
+bb_split <- train_raw %>%
+   mutate(
+      is_home_run = if_else(as.logical(is_home_run), "HR", "no"),
+      is_home_run = factor(is_home_run)
+   ) %>%
+   initial_split(strata = is_home_run)
+bb_train <- training(bb_split)
+bb_test <- testing(bb_split)
+
+set.seed(234)
+bb_folds <- vfold_cv(bb_train, strata = is_home_run)
+bb_folds
+
+
+bb_rec <-
+   recipe(is_home_run ~ launch_angle + launch_speed + plate_x + plate_z +
+             bb_type + bearing + pitch_mph +
+             is_pitcher_lefty + is_batter_lefty +
+             inning + balls + strikes + game_date,
+          data = bb_train
+   ) %>%
+   step_date(game_date, features = c("week"), keep_original_cols = FALSE) %>%
+   step_unknown(all_nominal_predictors()) %>%
+   step_dummy(all_nominal_predictors(), one_hot = TRUE) %>%
+   step_impute_median(all_numeric_predictors(), -launch_angle, -launch_speed) %>%
+   step_impute_linear(launch_angle, launch_speed,
+                      impute_with = imp_vars(plate_x, plate_z, pitch_mph)
+   ) %>%
+   step_nzv(all_predictors())
+
+xgb_spec <-
+   boost_tree(
+      trees = tune(),
+      min_n = tune(),
+      mtry = tune(),
+      learn_rate = 0.01
+   ) %>%
+   set_engine("xgboost") %>%
+   set_mode("classification")
+
+xgb_wf <- workflow(bb_rec, xgb_spec)
+
+library(finetune)
+doParallel::registerDoParallel()
+
+set.seed(345)
+xgb_rs <- tune_race_anova(
+   xgb_wf,
+   resamples = bb_folds,
+   grid = 15,
+   metrics = metric_set(mn_log_loss),
+   control = control_race(verbose_elim = TRUE)
+)
+
+xgb_last <- xgb_wf %>%
+   finalize_workflow(select_best(xgb_rs, "mn_log_loss")) %>%
+   last_fit(bb_split)
+
+xgb_last
+
+
+collect_predictions(xgb_last) %>%
+   mn_log_loss(is_home_run, .pred_HR)
+
 library(vip)
-
-extract_workflow(stopping_fit) %>%
+extract_workflow(xgb_last) %>%
    extract_fit_parsnip() %>%
-   vip(num_features = 15, geom = "point")
+   vip(geom = "point", num_features = 15)
+
+
 
 
 

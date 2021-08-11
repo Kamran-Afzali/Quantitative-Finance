@@ -166,7 +166,8 @@ change_tab %>%
 
 ```{r}
 day_tab %>% 
-   mutate(urlls = cell_spec(stock, "html", link = url)) %>%
+   mutate(urlls = cell_spec(stock, "html", link = url))%>%
+   arrange(desc(signal_B),desc(ADX))%>%
     DT::datatable(, escape = FALSE)
 ```
 
@@ -175,6 +176,7 @@ day_tab %>%
 ```{r}
 change_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
+   arrange(desc(signal_B),desc(ADX))%>%
 DT::datatable(, escape = FALSE)
 ```
 
