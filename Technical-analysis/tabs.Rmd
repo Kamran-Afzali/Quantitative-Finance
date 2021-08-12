@@ -120,49 +120,49 @@ for (i in 1:length(TKRS)) {
 
 # Buy
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo=FALSE}
 day_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
-   arrange(desc(signal_B),desc(weeklyreturn))%>%
-  head(20)%>%
+   arrange(desc(signal_B),desc(ADX))%>%
+  head(10)%>%
    kable("html", escape = FALSE) %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
 # Sell
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo=FALSE}
 day_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
-   arrange(desc(signal_S),weeklyreturn)%>%
-  head(20)%>%
+   arrange(desc(signal_S),desc(ADX))%>%
+  head(10)%>%
    kable("html", escape = FALSE) %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
 # Buy change
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo=FALSE}
 change_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_B),desc(weeklyreturn))%>%
-  head(20)%>%
+  head(10)%>%
    kable("html", escape = FALSE) %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
 # Sell change
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, echo=FALSE}
 change_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_S),weeklyreturn)%>%
-  head(20)%>%
+  head(10)%>%
    kable("html", escape = FALSE) %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
-# day_tab
+# Day_tab_Dynamic
 
 ```{r}
 day_tab %>% 
@@ -171,12 +171,12 @@ day_tab %>%
     DT::datatable(, escape = FALSE)
 ```
 
-# change_tab
+# change_tab_Dynamic
 
 ```{r}
 change_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
-   arrange(desc(signal_B),desc(ADX))%>%
+   arrange(desc(signal_B),desc(weeklyreturn))%>%
 DT::datatable(, escape = FALSE)
 ```
 
