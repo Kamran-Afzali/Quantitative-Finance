@@ -14,6 +14,7 @@ library(quantmod)
 library(tidyverse)
 library(modeldata)
 library(forecast)
+library(plotly)
 
 
 
@@ -120,7 +121,7 @@ for (i in 1:length(TKRS)) {
 
 # Buy
 
-```{r, echo=FALSE}
+```{r, eval=FALSE}
 day_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_B),desc(ADX))%>%
@@ -129,9 +130,30 @@ day_tab %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
-# Sell
+```{r, echo=FALSE}
+p=day_tab%>%filter(signal_B!=0)%>%select(signal_B,stock)%>%mutate(stock=as.factor(stock))%>%arrange(desc(signal_B))%>%
+  ggplot(aes(x=reorder(stock, signal_B),y=signal_B))+
+  scale_fill_gradient(low = "red", high = "green") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = signal_B))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Stock")+ ylab("signal_B")+ theme(legend.position = "none")
+ggplotly(p)
+
+```
 
 ```{r, echo=FALSE}
+p=day_tab%>%filter(signal_B!=0)%>%select(weeklyreturn,stock)%>%mutate(stock=as.factor(stock))%>%arrange(desc(weeklyreturn))%>%
+  ggplot(aes(x=reorder(stock, weeklyreturn),y=weeklyreturn))+
+  scale_fill_gradient(low = "red", high = "green") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Stock")+ ylab("weeklyreturn")+ theme(legend.position = "none")
+ggplotly(p)
+```
+
+# Sell
+
+```{r, eval=FALSE}
 day_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_S),desc(ADX))%>%
@@ -140,9 +162,29 @@ day_tab %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
-# Buy change
+```{r, echo=FALSE}
+p=day_tab%>%filter(signal_S!=0)%>%select(signal_S,stock)%>%mutate(stock=as.factor(stock))%>%arrange(desc(signal_S))%>%
+  ggplot(aes(x=reorder(stock, signal_S),y=signal_S))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = signal_S))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Stock")+ ylab("signal_S")+ theme(legend.position = "none")
+ggplotly(p)
+```
 
 ```{r, echo=FALSE}
+p=day_tab%>%filter(signal_S!=0)%>%select(weeklyreturn,stock)%>%mutate(stock=as.factor(stock))%>%arrange(desc(weeklyreturn))%>%
+  ggplot(aes(x=reorder(stock, weeklyreturn),y=weeklyreturn))+
+  scale_fill_gradient(low = "red", high = "green") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Stock")+ ylab("weeklyreturn")+ theme(legend.position = "none")
+ggplotly(p)
+```
+
+# Buy change
+
+```{r, eval=FALSE}
 change_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_B),desc(weeklyreturn))%>%
@@ -153,7 +195,7 @@ change_tab %>%
 
 # Sell change
 
-```{r, echo=FALSE}
+```{r, eval=FALSE}
 change_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_S),weeklyreturn)%>%
@@ -164,7 +206,7 @@ change_tab %>%
 
 # Day_tab_Dynamic
 
-```{r}
+```{r, echo=FALSE}
 day_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url))%>%
    arrange(desc(signal_B),desc(ADX))%>%
@@ -173,7 +215,7 @@ day_tab %>%
 
 # change_tab_Dynamic
 
-```{r}
+```{r, echo=FALSE}
 change_tab %>% 
    mutate(urlls = cell_spec(stock, "html", link = url)) %>%
    arrange(desc(signal_B),desc(weeklyreturn))%>%
