@@ -131,24 +131,15 @@ day_tab %>%
 ```
 
 ```{r, echo=FALSE}
-p=day_tab%>%filter(signal_B!=0)%>%select(signal_B,stock)%>%mutate(stock=as.factor(stock))%>%arrange(desc(signal_B))%>%
-  ggplot(aes(x=reorder(stock, signal_B),y=signal_B))+
-  scale_fill_gradient(low = "red", high = "green") + 
-  geom_bar(position="dodge", stat="identity", aes(fill = signal_B))+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  xlab("Stock")+ ylab("signal_B")+ theme(legend.position = "none")
-ggplotly(p)
-
-```
-
-```{r, echo=FALSE}
-p=day_tab%>%filter(signal_B!=0)%>%select(weeklyreturn,stock)%>%mutate(stock=as.factor(stock))%>%arrange(desc(weeklyreturn))%>%
-  ggplot(aes(x=reorder(stock, weeklyreturn),y=weeklyreturn))+
+p=day_tab%>%filter(signal_B!=0)%>%select(signal_B,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
+  mutate(ordering = signal_B + weeklyreturn/10)%>%
+  ggplot(aes(x=reorder(stock, ordering),y=signal_B))+
   scale_fill_gradient(low = "red", high = "green") + 
   geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  xlab("Stock")+ ylab("weeklyreturn")+ theme(legend.position = "none")
+  xlab("Stock")
 ggplotly(p)
+
 ```
 
 # Sell
@@ -162,23 +153,15 @@ day_tab %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
-```{r, echo=FALSE}
-p=day_tab%>%filter(signal_S!=0)%>%select(signal_S,stock)%>%mutate(stock=as.factor(stock))%>%arrange(desc(signal_S))%>%
-  ggplot(aes(x=reorder(stock, signal_S),y=signal_S))+
-  scale_fill_gradient(low = "green", high = "red") + 
-  geom_bar(position="dodge", stat="identity", aes(fill = signal_S))+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  xlab("Stock")+ ylab("signal_S")+ theme(legend.position = "none")
-ggplotly(p)
-```
 
 ```{r, echo=FALSE}
-p=day_tab%>%filter(signal_S!=0)%>%select(weeklyreturn,stock)%>%mutate(stock=as.factor(stock))%>%arrange(desc(weeklyreturn))%>%
-  ggplot(aes(x=reorder(stock, weeklyreturn),y=weeklyreturn))+
+p=day_tab%>%filter(signal_S!=0)%>%select(signal_S,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
+  mutate(ordering = signal_S + weeklyreturn/10)%>%
+  ggplot(aes(x=reorder(stock, ordering),y=signal_S))+
   scale_fill_gradient(low = "red", high = "green") + 
   geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  xlab("Stock")+ ylab("weeklyreturn")+ theme(legend.position = "none")
+  xlab("Stock")
 ggplotly(p)
 ```
 
@@ -193,6 +176,18 @@ change_tab %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
+```{r, echo=FALSE}
+p=change_tab%>%filter(signal_B>0)%>%select(signal_B,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
+  mutate(ordering = signal_B + weeklyreturn/10)%>%
+  ggplot(aes(x=reorder(stock, ordering),y=signal_B))+
+  scale_fill_gradient(low = "red", high = "green") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Stock")
+ggplotly(p)
+
+```
+
 # Sell change
 
 ```{r, eval=FALSE}
@@ -203,6 +198,19 @@ change_tab %>%
    kable("html", escape = FALSE) %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
+
+
+```{r, echo=FALSE}
+p=change_tab%>%filter(signal_S>0)%>%select(signal_S,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
+  mutate(ordering = signal_S + weeklyreturn/10)%>%
+  ggplot(aes(x=reorder(stock, ordering),y=signal_S))+
+  scale_fill_gradient(low = "green", high = "red") + 
+  geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Stock")
+ggplotly(p)
+```
+
 
 # Day_tab_Dynamic
 

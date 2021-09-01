@@ -614,6 +614,94 @@ extract_workflow(xgb_last) %>%
 
 
 
+########################Experimenting with visualization###################
+p=day_tab%>%filter(signal_S!=0)%>%select(signal_S,stock)%>%mutate(stock=as.factor(stock))%>%arrange(desc(signal_S))%>%
+   ggplot(aes(x=reorder(stock, signal_S),y=signal_S))+
+   scale_fill_gradient(low = "green", high = "red") + 
+   geom_bar(position="dodge", stat="identity", aes(fill = signal_S))+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+   xlab("Stock")+ ylab("signal_S")+ theme(legend.position = "none")
+ggplotly(p)
+
+
+p=day_tab%>%filter(signal_S!=0)%>%select(weeklyreturn,stock)%>%mutate(stock=as.factor(stock))%>%arrange(desc(weeklyreturn))%>%
+   ggplot(aes(x=reorder(stock, weeklyreturn),y=weeklyreturn))+
+   scale_fill_gradient(low = "red", high = "green") + 
+   geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+   xlab("Stock")+ ylab("weeklyreturn")+ theme(legend.position = "none")
+ggplotly(p)
+
+
+day_tab%>%filter(signal_S!=0)%>%select(signal_S,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%arrange(desc(signal_S))%>%
+   ggplot(aes(x=reorder(stock, weeklyreturn),y=weeklyreturn))+
+   scale_color_gradient(low = "blue", high = "orange") + 
+   scale_fill_gradient(low = "red", high = "green") + 
+   geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+   geom_point(aes(size=signal_S, color=signal_S))+
+   scale_size(range = c(.1,13))+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+day_tab%>%filter(signal_B!=0)%>%select(signal_B,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%arrange(desc(signal_B))%>%
+   ggplot(aes(x=reorder(stock, weeklyreturn),y=weeklyreturn))+
+   scale_color_gradient(low = "blue", high = "orange") + 
+   scale_fill_gradient(low = "red", high = "green") + 
+   geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+   geom_point(aes(size=signal_B, color=signal_B))+
+   scale_size(range = c(.1,13))+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+
+
+
+
+p=day_tab%>%filter(signal_B!=0)%>%select(signal_B,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
+   mutate(ordering = signal_B + weeklyreturn/10)%>%
+   ggplot(aes(x=reorder(stock, ordering),y=signal_B))+
+   scale_fill_gradient(low = "red", high = "green") + 
+   geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+   xlab("Stock")
+ggplotly(p)
+
+
+
+p=day_tab%>%filter(signal_S!=0)%>%select(signal_S,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
+   mutate(ordering = signal_S + weeklyreturn/10)%>%
+   ggplot(aes(x=reorder(stock, ordering),y=signal_S))+
+   scale_fill_gradient(low = "red", high = "green") + 
+   geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+   xlab("Stock")
+ggplotly(p)
+
+
+p=change_tab%>%filter(signal_B>0)%>%select(signal_B,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
+   mutate(ordering = signal_B + weeklyreturn/10)%>%
+   ggplot(aes(x=reorder(stock, ordering),y=signal_B))+
+   scale_fill_gradient(low = "red", high = "green") + 
+   geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+   xlab("Stock")
+ggplotly(p)
+
+
+
+p=change_tab%>%filter(signal_S>0)%>%select(signal_S,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
+   mutate(ordering = signal_S + weeklyreturn/10)%>%
+   ggplot(aes(x=reorder(stock, ordering),y=signal_S))+
+   scale_fill_gradient(low = "green", high = "red") + 
+   geom_bar(position="dodge", stat="identity", aes(fill = weeklyreturn))+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+   xlab("Stock")
+ggplotly(p)
+
+library(BatchGetSymbols)
+
+
+df.SP500 <- GetSP500Stocks()
 
 
 
