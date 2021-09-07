@@ -130,7 +130,7 @@ day_tab %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
-```{r, echo=FALSE}
+```{r out.width = "100%", echo=FALSE}
 p=day_tab%>%filter(signal_B!=0)%>%select(signal_B,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
   mutate(ordering = signal_B + weeklyreturn/10)%>%
   ggplot(aes(x=reorder(stock, ordering),y=signal_B))+
@@ -154,7 +154,7 @@ day_tab %>%
 ```
 
 
-```{r, echo=FALSE}
+```{r out.width = "100%", echo=FALSE}
 p=day_tab%>%filter(signal_S!=0)%>%select(signal_S,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
   mutate(ordering = signal_S + weeklyreturn/10)%>%
   ggplot(aes(x=reorder(stock, ordering),y=signal_S))+
@@ -176,7 +176,7 @@ change_tab %>%
    kable_styling(bootstrap_options = c("hover", "condensed"))
 ```
 
-```{r, echo=FALSE}
+```{r out.width = "100%", echo=FALSE}
 p=change_tab%>%filter(signal_B>0)%>%select(signal_B,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
   mutate(ordering = signal_B + weeklyreturn/10)%>%
   ggplot(aes(x=reorder(stock, ordering),y=signal_B))+
@@ -200,7 +200,7 @@ change_tab %>%
 ```
 
 
-```{r, echo=FALSE}
+```{r out.width = "100%", echo=FALSE}
 p=change_tab%>%filter(signal_S>0)%>%select(signal_S,stock,weeklyreturn)%>%mutate(stock=as.factor(stock))%>%
   mutate(ordering = signal_S + weeklyreturn/10)%>%
   ggplot(aes(x=reorder(stock, ordering),y=signal_S))+
