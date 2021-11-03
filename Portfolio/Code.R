@@ -3,11 +3,12 @@ library(plotly) # To create interactive charts
 library(timetk) # To manipulate the data series
 library(forcats)
 library(tidyr)
-
-tick <- c('BTI', 'ARKK', 'QQQ', 'C', 'PSI','IHI','ZRE.TO','ZEO.TO')
+#https://seekingalpha.com/etfs-and-funds/etf-tables/sectors?utm_source=google&utm_medium=cpc&utm_campaign=14049528666&utm_term=127926794296%5Eaud-1457157706959:dsa-1427142718946%5Eb%5E547566878395%5E%5E%5Eg&gclid=Cj0KCQjw5oiMBhDtARIsAJi0qk2LjR58Nfps9hx7OgGrL_XmycmlH96YxiapMt-b5as3aFIQfQ5ggoIaAlOwEALw_wcB
+#https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/Betas.html
+tick <- c('IXC', 'IXG', 'IXN', 'IXJ', 'IXP','RXI','EXI','MXI','KXI','JXI')
 
 price_data <- tq_get(tick,
-                     from = '2017-01-01',
+                     from = '2010-01-01',
                      to = '2021-11-01',
                      get = 'stock.prices')
 
@@ -32,6 +33,8 @@ summary(log_ret_xts)
 log_ret_xts=log_ret_xts%>%as.data.frame()%>%drop_na()
 
 summary(log_ret_xts)
+
+head(log_ret_xts)
 
 
 mean_ret <- colMeans(log_ret_xts,na.rm = T)
@@ -67,7 +70,7 @@ print(sharpe_ratio)
 
 
 
-num_port <- 5000
+num_port <- 10000
 
 # Creating a matrix to store the weights
 
@@ -144,7 +147,7 @@ min_var <- portfolio_values[which.min(portfolio_values$Risk),]
 max_sr <- portfolio_values[which.max(portfolio_values$SharpeRatio),]
 
 p <- min_var %>%
-  gather(ARKK:ZRE.TO, key = Asset,
+  gather(EXI:RXI, key = Asset,
          value = Weights) %>%
   mutate(Asset = as.factor(Asset)) %>%
   ggplot(aes(x = fct_reorder(Asset,Weights), y = Weights, fill = Asset)) +
@@ -157,7 +160,7 @@ ggplotly(p)
 
 
 p <- max_sr %>%
-  gather(ARKK:ZRE.TO, key = Asset,
+  gather(EXI:RXI, key = Asset,
          value = Weights) %>%
   mutate(Asset = as.factor(Asset)) %>%
   ggplot(aes(x = fct_reorder(Asset,Weights), y = Weights, fill = Asset)) +
@@ -183,4 +186,4 @@ p <- portfolio_values %>%
                  y = Return), data = min_var, color = 'red') +
   geom_point(aes(x = Risk,
                  y = Return), data = max_sr, color = 'red')
-ggplotly(p)
+p
