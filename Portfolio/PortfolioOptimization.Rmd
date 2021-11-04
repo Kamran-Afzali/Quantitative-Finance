@@ -1,9 +1,27 @@
-library(tidyquant) # To download the data
-library(plotly) # To create interactive charts
-library(timetk) # To manipulate the data series
+---
+title: "Portfolio Optimization"
+output:
+  html_document:
+    df_print: paged
+    keep_md: yes
+---
+
+
+# Portfolio Optimization
+
+
+First you have to install and load the following packages:
+
+```{r}
+library(tidyquant) 
+library(timetk) 
 library(forcats)
 library(tidyr)
+```
 
+### Sector etfs
+
+```{r}
 tick <- c('IXC', 'IXG', 'IXN', 'IXJ', 'IXP','RXI','EXI','MXI','KXI','JXI')
 
 price_data <- tq_get(tick,
@@ -11,6 +29,10 @@ price_data <- tq_get(tick,
                      to = '2021-11-01',
                      get = 'stock.prices')
 
+
+```
+
+```{r}
 log_ret_tidy <- price_data %>%
   group_by(symbol) %>%
   tq_transmute(select = adjusted,
@@ -20,7 +42,10 @@ log_ret_tidy <- price_data %>%
                type = 'log')
 
 head(log_ret_tidy)
+```
 
+
+```{r}
 log_ret_xts <- log_ret_tidy %>%
   spread(symbol, value = ret) %>%
   tk_xts()
@@ -35,7 +60,9 @@ summary(log_ret_xts)
 
 head(log_ret_xts)
 
+```
 
+```{r}
 mean_ret <- colMeans(log_ret_xts,na.rm = T)
 print(round(mean_ret, 5))
 
@@ -45,16 +72,17 @@ cov_mat <- cov(log_ret_xts) * 252
 print(round(cov_mat,4))
 
 
+```
+
+```{r}
 wts <- runif(n = length(tick))
-print(wts)
-
-print(sum(wts))
-
-
-
 wts <- wts/sum(wts)
 print(wts)
 
+```
+
+
+```{r}
 
 
 port_returns <- (sum(wts * mean_ret) + 1)^252 - 1
@@ -66,9 +94,9 @@ print(port_risk)
 
 sharpe_ratio <- port_returns/port_risk
 print(sharpe_ratio)
+```
 
-
-
+```{r}
 num_port <- 10000
 
 # Creating a matrix to store the weights
@@ -91,8 +119,9 @@ port_risk <- vector('numeric', length = num_port)
 
 sharpe_ratio <- vector('numeric', length = num_port)
 
+```
 
-
+```{r}
 for (i in seq_along(port_returns)) {
   
   wts <- runif(length(tick))
@@ -122,9 +151,9 @@ for (i in seq_along(port_returns)) {
   
 }
 
+```
 
-
-
+```{r}
 portfolio_values <- tibble(Return = port_returns,
                            Risk = port_risk,
                            SharpeRatio = sharpe_ratio)
@@ -141,9 +170,18 @@ colnames(all_wts) <- colnames(log_ret_xts)
 portfolio_values <- tk_tbl(cbind(all_wts, portfolio_values))
 head(portfolio_values)
 
+```
+
+
+```{r}
 
 min_var <- portfolio_values[which.min(portfolio_values$Risk),]
 max_sr <- portfolio_values[which.max(portfolio_values$SharpeRatio),]
+
+```
+
+
+```{r}
 
 p <- min_var %>%
   gather(EXI:RXI, key = Asset,
@@ -155,9 +193,11 @@ p <- min_var %>%
   labs(x = 'Assets', y = 'Weights', title = "Minimum Variance Portfolio Weights") +
   scale_y_continuous(labels = scales::percent) 
 
-ggplotly(p)
+p
+```
 
 
+```{r}
 p <- max_sr %>%
   gather(EXI:RXI, key = Asset,
          value = Weights) %>%
@@ -168,10 +208,11 @@ p <- max_sr %>%
   labs(x = 'Assets', y = 'Weights', title = "Tangency Portfolio Weights") +
   scale_y_continuous(labels = scales::percent) 
 
-ggplotly(p)
+p
+```
 
 
-
+```{r}
 p <- portfolio_values %>%
   ggplot(aes(x = Risk, y = Return, color = SharpeRatio)) +
   geom_point() +
@@ -186,3 +227,12 @@ p <- portfolio_values %>%
   geom_point(aes(x = Risk,
                  y = Return), data = max_sr, color = 'red')
 p
+```
+
+
+## References
+
+-   [Sectors](https://seekingalpha.com/etfs-and-funds/etf-tables/sectors?utm_source=google&utm_medium=cpc&utm_campaign=14049528666&utm_term=127926794296%5Eaud-1457157706959:dsa-1427142718946%5Eb%5E547566878395%5E%5E%5Eg&gclid=Cj0KCQjw5oiMBhDtARIsAJi0qk2LjR58Nfps9hx7OgGrL_XmycmlH96YxiapMt-b5as3aFIQfQ5ggoIaAlOwEALw_wcB)
+-   [Betas](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/Betas.html)
+
+
