@@ -6,8 +6,12 @@ library(tidyr)
 
 tick <- c('IXC', 'IXG', 'IXN', 'IXJ', 'IXP','RXI','EXI','MXI','KXI','JXI')
 
+tick=unique(c("FONR","NTR.TO","MG.TO","MSOS", "TCNNF","AVGO","AEO","PYPL","DPZ","TSM","FVRR","STNE","GRWG","DOCU","ESPO","VEEV","OKTA","CWH","TWOU","MAXR","COST","NTSX","MA","V","LUMN","BTI","CLX","TRP.TO","RSI.TO","LSPD.TO","ATE.TO","EDGE.TO","ZEO.TO","ZRE.TO","RCI-B.TO","BTO.TO","ABX.TO","NWH-UN.TO","SJR-B.TO","IHI","XEG.TO","XMA.TO","XIN.TO","XMD.TO","XIT.TO","SU.TO","MFC.TO","TRP.TO","T.TO","BEPC.TO","KL.TO","CGL.TO","SKYY","RNW.TO","PSI","ICLN","ARKK","ETHQ.TO","RSI.TO","LSPD.TO","ATE.TO","LIFE.TO","MCHI","XCH.TO","IHF","ZEO.TO","XGD.TO","ZRE.TO","HACK","RCI-B.TO","BTO.TO","ABX.TO","NWH-UN.TO","XTR.TO","XEG.TO","XMA.TO","XIN.TO","XMD.TO","XIT.TO","BIP-UN.TO","AP-UN.TO","RTH","TAN","PBD","EMQQ","KGRN","VDY.TO","ROBO","BLDP.TO","AC.TO","DGRO","BCE.TO","ATZ.TO","ARRY","ZCH.TO","REI-UN.TO","BB.TO","GNOM","ARKG","VGRO.TO","SCHD","WCN.TO","RBA.TO","VRE.TO","XDSR.TO","BEP-UN.TO","XEQT.TO","XQQ.TO","VFV.TO","CNR.TO","XUH.TO","XUU.TO","PSI","IGV","PSJ","SOXX","IHI","IVW","XST.TO","XUT.TO","CPX.TO","HXS.TO","HXQ.TO","XHC.TO","BNS.TO","TD.TO","ENB.TO","CNQ.TO","RY.TO","CSIQ","PLTR","TGT","BMO","C","BTI","ETHQ.TO","RSI.TO","GDNP.V","LSPD.TO","ATE.TO","EDGE.TO","ZEO.TO","ZRE.TO","RCI-B.TO","BTO.TO","ABX.TO","NWH-UN.TO","SJR-B.TO","IHI","XEG.TO","XMA.TO","XIN.TO","XMD.TO","XIT.TO","SU.TO","MFC.TO","TRP.TO","T.TO","BEPC.TO","KL.TO","CGL.TO","SKYY","RNW.TO","PSI","ICLN","HEO.V","ARKK","BNS.TO","TD.TO","ENB.TO","CNQ.TO","RY.TO","CSIQ","PLTR","TGT","BMO","C","BTI","ETHQ.TO","RSI.TO","GDNP.V","LSPD.TO","ATE.TO","IPA.V","LIFE.TO","MCHI","XCH.TO","IHF","ZEO.TO","XGD.TO","ZRE.TO","HACK","RCI-B.TO","BTO.TO","ABX.TO","NWH-UN.TO","XTR.TO","XEG.TO","XMA.TO","XIN.TO","XMD.TO","XIT.TO","BIP-UN.TO","AP-UN.TO","RTH","TAN","PBD","EMQQ","KGRN","VDY.TO","ROBO","BLDP.TO","AC.TO","DGRO","BCE.TO","ATZ.TO","ARRY","ZCH.TO","REI-UN.TO","BB.TO","GNOM","ARKG","VGRO.TO","SCHD","WCN.TO","RBA.TO","VRE.TO","XDSR.TO","BEP-UN.TO","XEQT.TO","XQQ.TO","VFV.TO","CNR.TO","XUH.TO","XUU.TO","PSI","IGV","PSJ","SOXX","IHI","IVW","XST.TO","XUT.TO","CPX.TO","HXS.TO","HXQ.TO","XHC.TO","BAM-A.TO","CVE.TO")
+)
+
+
 price_data <- tq_get(tick,
-                     from = '2010-01-01',
+                     from = '2016-01-01',
                      to = '2021-11-01',
                      get = 'stock.prices')
 
@@ -146,7 +150,7 @@ min_var <- portfolio_values[which.min(portfolio_values$Risk),]
 max_sr <- portfolio_values[which.max(portfolio_values$SharpeRatio),]
 
 p <- min_var %>%
-  gather(EXI:RXI, key = Asset,
+  gather(ABX.TO:ZRE.TO, key = Asset,
          value = Weights) %>%
   mutate(Asset = as.factor(Asset)) %>%
   ggplot(aes(x = fct_reorder(Asset,Weights), y = Weights, fill = Asset)) +
@@ -159,7 +163,7 @@ ggplotly(p)
 
 
 p <- max_sr %>%
-  gather(EXI:RXI, key = Asset,
+  gather(ABX.TO:ZRE.TO, key = Asset,
          value = Weights) %>%
   mutate(Asset = as.factor(Asset)) %>%
   ggplot(aes(x = fct_reorder(Asset,Weights), y = Weights, fill = Asset)) +

@@ -153,6 +153,9 @@ for (i in seq_along(port_returns)) {
 
 ```
 
+
+here we are making a tibble of portfolio returns, risks, and sharp ratios 
+
 ```{r}
 portfolio_values <- tibble(Return = port_returns,
                            Risk = port_risk,
@@ -161,9 +164,7 @@ portfolio_values <- tibble(Return = port_returns,
 
 # Converting matrix to a tibble and changing column names
 all_wts <- tk_tbl(all_wts)
-## Warning in tk_tbl.data.frame(as.data.frame(data), preserve_index,
-## rename_index, : Warning: No index to preserve. Object otherwise converted
-## to tibble successfully.
+
 colnames(all_wts) <- colnames(log_ret_xts)
 
 # Combing all the values together
@@ -172,6 +173,7 @@ head(portfolio_values)
 
 ```
 
+Minimum variance portfolio weights and Tangency portfolio weights with the highest sharp ratio!
 
 ```{r}
 
@@ -180,6 +182,7 @@ max_sr <- portfolio_values[which.max(portfolio_values$SharpeRatio),]
 
 ```
 
+Minimum variance portfolio weights visualization!
 
 ```{r}
 
@@ -196,6 +199,7 @@ p <- min_var %>%
 p
 ```
 
+Tangency portfolio weights with the highest sharp ratio visualization!
 
 ```{r}
 p <- max_sr %>%
@@ -232,7 +236,8 @@ p
 
 ## References
 
--   [Sectors](https://seekingalpha.com/etfs-and-funds/etf-tables/sectors?utm_source=google&utm_medium=cpc&utm_campaign=14049528666&utm_term=127926794296%5Eaud-1457157706959:dsa-1427142718946%5Eb%5E547566878395%5E%5E%5Eg&gclid=Cj0KCQjw5oiMBhDtARIsAJi0qk2LjR58Nfps9hx7OgGrL_XmycmlH96YxiapMt-b5as3aFIQfQ5ggoIaAlOwEALw_wcB)
--   [Betas](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/Betas.html)
+- [Sectors](https://seekingalpha.com/etfs-and-funds/etf-tables/sectors?utm_source=google&utm_medium=cpc&utm_campaign=14049528666&utm_term=127926794296%5Eaud-1457157706959:dsa-1427142718946%5Eb%5E547566878395%5E%5E%5Eg&gclid=Cj0KCQjw5oiMBhDtARIsAJi0qk2LjR58Nfps9hx7OgGrL_XmycmlH96YxiapMt-b5as3aFIQfQ5ggoIaAlOwEALw_wcB)
+
+- [Betas](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/Betas.html)
 
 
