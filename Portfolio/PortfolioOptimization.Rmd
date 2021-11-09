@@ -4,11 +4,13 @@ output:
   html_document:
     df_print: paged
     keep_md: yes
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
-
 # Portfolio Optimization
-
+According to the Modern portfolio theory (MPT) for any given level of risk it is possible to maximize the return of a portfolio, which is in practice called portfolio optimization. To do this oone would need the historical prices of the assets that will be used to compute mean returns for the time period, as well as the covariance matrix between the assets for the same period, and finally random weights assigned to each asset and to maximize the return to risk ratio.
 
 First you have to install and load the following packages:
 
@@ -17,9 +19,18 @@ library(tidyquant)
 library(timetk) 
 library(forcats)
 library(tidyr)
+library(kableExtra)
+library(ggplot2)
+library(dplyr)
+
+
 ```
 
 ### Sector etfs
+
+This analysis is based on sector ETFs to gain a perspective on the
+performance and risk of different sectors. IXC energy sector, IXG financial sector, IXN technology
+sector, IXJ healthcare sector, IXP telecom sector, RXI consumer discretionary sector, EXI industrial sector, MXI basic sector, KXI consumer staple sector, and forJXI utlities sector. Here we use the *tq_get* function.
 
 ```{r}
 tick <- c('IXC', 'IXG', 'IXN', 'IXJ', 'IXP','RXI','EXI','MXI','KXI','JXI')
@@ -32,55 +43,67 @@ price_data <- tq_get(tick,
 
 ```
 
+as always we transform the price to return and log transform it using
+*tq_transmute* function
+
 ```{r}
 log_ret_tidy <- price_data %>%
-  group_by(symbol) %>%
+  dplyr::group_by(symbol) %>%
   tq_transmute(select = adjusted,
                mutate_fun = periodReturn,
                period = 'daily',
                col_rename = 'ret',
                type = 'log')
 
-head(log_ret_tidy)
+head(log_ret_tidy)%>%kable()
 ```
 
+then we transform the long data to wide data using the *spread* function
+and drop the missing data using the *drop_na* function.
 
 ```{r}
 log_ret_xts <- log_ret_tidy %>%
   spread(symbol, value = ret) %>%
   tk_xts()
 
-head(log_ret_xts)
-
-summary(log_ret_xts)
-
 log_ret_xts=log_ret_xts%>%as.data.frame()%>%drop_na()
 
-summary(log_ret_xts)
+summary(log_ret_xts)%>%kable()
 
-head(log_ret_xts)
+head(log_ret_xts)%>%kable()
 
 ```
+
+using the long data *colMeans* function provides the mean daily return
+for each sector
 
 ```{r}
 mean_ret <- colMeans(log_ret_xts,na.rm = T)
-print(round(mean_ret, 5))
+print(round(mean_ret, 5))%>%kable()
+```
 
+in the same way the daily covariance matrix is formed by the *cov*
+function and multiplied by the number of work days per year i.e. 252
+days excluding weekends and holidays.
 
+```{r}
 cov_mat <- cov(log_ret_xts) * 252
-
-print(round(cov_mat,4))
-
+print(round(cov_mat,4))%>%kable()
 
 ```
+
+The *runif* function provides hypothetical weights standardized to sum
+up to 1.
 
 ```{r}
 wts <- runif(n = length(tick))
 wts <- wts/sum(wts)
-print(wts)
+print(wts)%>%kable()
 
 ```
 
+This is the code for computing portfolio returns, risks, and sharp
+ratios.
 
 ```{r}
 
@@ -88,13 +111,16 @@ print(wts)
 port_returns <- (sum(wts * mean_ret) + 1)^252 - 1
 
 
-port_risk <- sqrt(t(wts) %*% (cov_mat %*% wts))
-print(port_risk)
+port_risk <- sqrt(t(wts) %*%(cov_mat %*% wts) )
+print(port_risk)%>%kable()
 
 
 sharpe_ratio <- port_returns/port_risk
-print(sharpe_ratio)
+print(sharpe_ratio)%>%kable()
 ```
+
+This snippet set place holders for 10000 weights, portfolio risks,
+returns, and sharp ratios.
 
 ```{r}
 num_port <- 10000
@@ -120,6 +146,9 @@ port_risk <- vector('numeric', length = num_port)
 sharpe_ratio <- vector('numeric', length = num_port)
 
 ```
+
+here is the loop to highlight portfolio returns, risks, and sharp ratios
+for different wheight combinations
 
 ```{r}
 for (i in seq_along(port_returns)) {
@@ -153,8 +182,8 @@ for (i in seq_along(port_returns)) {
 
 ```
 
-
-here we are making a tibble of portfolio returns, risks, and sharp ratios 
+here we are making a tibble of portfolio returns, risks, and sharp
+ratios
 
 ```{r}
 portfolio_values <- tibble(Return = port_returns,
@@ -169,11 +198,12 @@ colnames(all_wts) <- colnames(log_ret_xts)
 
 # Combing all the values together
 portfolio_values <- tk_tbl(cbind(all_wts, portfolio_values))
-head(portfolio_values)
+head(portfolio_values)%>%kable()
 
 ```
 
-Minimum variance portfolio weights and Tangency portfolio weights with the highest sharp ratio!
+Minimum variance portfolio weights and Tangency portfolio weights with
+the highest sharp ratio!
 
 ```{r}
 
@@ -182,9 +212,9 @@ max_sr <- portfolio_values[which.max(portfolio_values$SharpeRatio),]
 
 ```
 
-Minimum variance portfolio weights visualization!
+Minimum variance portfolio weights visualization is presented here
 
-```{r}
+```{r portop1}
 
 p <- min_var %>%
   gather(EXI:RXI, key = Asset,
@@ -199,9 +229,10 @@ p <- min_var %>%
 p
 ```
 
-Tangency portfolio weights with the highest sharp ratio visualization!
+Tangency portfolio weights with the highest sharp ratio visualization is
+presented here
 
-```{r}
+```{r portop2}
 p <- max_sr %>%
   gather(EXI:RXI, key = Asset,
          value = Weights) %>%
@@ -215,8 +246,9 @@ p <- max_sr %>%
 p
 ```
 
+and the risk/performance axis for all weights is presented here
 
-```{r}
+```{r  portop3 }
 p <- portfolio_values %>%
   ggplot(aes(x = Risk, y = Return, color = SharpeRatio)) +
   geom_point() +
@@ -233,11 +265,8 @@ p <- portfolio_values %>%
 p
 ```
 
-
 ## References
 
-- [Sectors](https://seekingalpha.com/etfs-and-funds/etf-tables/sectors?utm_source=google&utm_medium=cpc&utm_campaign=14049528666&utm_term=127926794296%5Eaud-1457157706959:dsa-1427142718946%5Eb%5E547566878395%5E%5E%5Eg&gclid=Cj0KCQjw5oiMBhDtARIsAJi0qk2LjR58Nfps9hx7OgGrL_XmycmlH96YxiapMt-b5as3aFIQfQ5ggoIaAlOwEALw_wcB)
+-   [Sectors](https://seekingalpha.com/etfs-and-funds/etf-tables/sectors?utm_source=google&utm_medium=cpc&utm_campaign=14049528666&utm_term=127926794296%5Eaud-1457157706959:dsa-1427142718946%5Eb%5E547566878395%5E%5E%5Eg&gclid=Cj0KCQjw5oiMBhDtARIsAJi0qk2LjR58Nfps9hx7OgGrL_XmycmlH96YxiapMt-b5as3aFIQfQ5ggoIaAlOwEALw_wcB)
 
-- [Betas](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/Betas.html)
-
-
+-   [Betas](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/Betas.html)
