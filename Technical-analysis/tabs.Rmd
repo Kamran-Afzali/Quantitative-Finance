@@ -19,7 +19,7 @@ library(plotly)
 
 
 sigtab<- function(tkr){
-  spy <- getSymbols(tkr, src = "yahoo", from = Sys.Date()-200, to = Sys.Date(), auto.assign = FALSE)
+  spy <- getSymbols(tkr, src = "yahoo", from = Sys.Date()-200, to = Sys.Date()-1, auto.assign = FALSE)
   signal_RSI_B  =1*(RSI(Cl(spy))< 30)%>% replace(is.na(.), 0)
   signal_EMA1_B =1*(EMA(Cl(spy),n=12)>EMA(Cl(spy),n=26))%>% replace(is.na(.), 0)
   signal_EMA2_B =1*(EMA(Cl(spy),n=24)>EMA(Cl(spy),n=52))%>% replace(is.na(.), 0)
